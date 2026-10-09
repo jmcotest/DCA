@@ -32,3 +32,43 @@ datosexcel$tratamiento_f<-as.factor(datosexcel$tratamiento)
 str(datosexcel)
 levels(datosexcel$tratamiento_f)
 nlevels(datosexcel$tratamiento_f)
+
+#Estadistica descriptiva
+
+#Funciones previas
+descriptiva<-aggregate(nitrogeno~tratamiento,data=datos,mean)
+descriptivasd<-aggregate(nitrogeno~tratamiento,data=datos,sd)
+
+#personalizando aggregate forma 1
+descriptiva<-aggregate(nitrogeno~tratamiento,data=datos,function(x){
+  media<-mean(x)
+  sd <- sd(x)
+  n <- length(x)
+  # t(alpha/2,gl)*s/raiz(n)
+  delta<-qt(0.025,n-1,lower.tail=FALSE)*sd/sqrt(n)
+  return(c(Media=media,Ds=sd,N=n,Delta=delta,Inferior=media-delta,Superior=media+delta,
+  Maximo=max(x),Minimo=min(x),Mediana=median(x)))
+})
+descriptiva
+
+#personalizando agregate forma 2
+resumen<-function(x){
+  media<-mean(x)
+  sd <- sd(x)
+  n <- length(x)
+  # t(alpha/2,gl)*s/raiz(n)
+  delta<-qt(0.025,n-1,lower.tail=FALSE)*sd/sqrt(n)
+  return(c(Media=media,Ds=sd,N=n,Delta=delta,Inferior=media-delta,Superior=media+delta,
+  Maximo=max(x),Minimo=min(x),Mediana=median(x)))
+}
+descriptiva<-aggregate(nitrogeno~tratamiento,data=datos,resumen)
+
+descriptiva_tapply<-tapply(datos$nitrogeno,datos$tratamiento,resumen)
+
+##Formas de acceder a una lista
+str(descriptiva)
+str(descriptiva_tapply)
+descriptiva_tapply$`3D0K1`
+descriptiva_tapply[[1]]
+names(descriptiva_tapply)
+descriptiva_tapply[["3D0K1"]]
