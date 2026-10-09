@@ -64,6 +64,7 @@ resumen<-function(x){
 descriptiva<-aggregate(nitrogeno~tratamiento,data=datos,resumen)
 
 descriptiva_tapply<-tapply(datos$nitrogeno,datos$tratamiento,resumen)
+descriptiva2<-do.call(rbind,descriptiva_tapply)
 
 ##Formas de acceder a una lista
 str(descriptiva)
@@ -72,3 +73,19 @@ descriptiva_tapply$`3D0K1`
 descriptiva_tapply[[1]]
 names(descriptiva_tapply)
 descriptiva_tapply[["3D0K1"]]
+str(descriptiva2)
+
+
+boxplot(nitrogeno~tratamiento,data=datos)
+
+num_oro<-(1+sqrt(5))/2
+jpeg(file.path(".","salidas","graficos","barras.jpg"),units="px",height=5*1200,width=num_oro*5*1200,res=1200,
+quality = 100)
+bp<-barplot(descriptiva$nitrogeno[,"Media"],col="green",xlab=expression("Cepas de " * italic("Rhizobium") * " sp."),
+ ylab="Nitrogeno (mg)",ylim=c(0,40),names.arg = descriptiva$tratamiento,cex.axis = 0.7)
+arrows(bp,descriptiva$nitrogeno[,"Inferior"],bp,descriptiva$nitrogeno[,"Superior"],
+length = 0.05, lwd=1.5,code=3,angle=90)
+#points(x=rep(bp,each=5),y=datos$nitrogeno) falta ordenar los datos por trata
+dev.off()
+
+barplot(descriptiva2[,"Media"])
