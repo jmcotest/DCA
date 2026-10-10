@@ -76,43 +76,47 @@ str(descriptiva2)
 
 
 boxplot(nitrogeno~tratamiento,data=datos)
+barras_personalizado<-function(media,mediana,inferior,superior,color_barras,color_datos,
+ color_media,color_mediana,names_trt,repeticiones,ydatos,jpg=FALSE){
+  num_oro<-(1+sqrt(5))/2
+  if (jpg) {
+    jpeg(file.path(".","salidas","graficos","barras.jpg"),units="px",
+    height=5*1200,width=num_oro*5*1200,res=1200,quality = 100)
+  }
 
-num_oro<-(1+sqrt(5))/2
-jpeg(file.path(".","salidas","graficos","barras.jpg"),units="px",height=5*1200,width=num_oro*5*1200,res=1200,
- quality = 100)
-# Paleta de colores
-color_barras  <- "#397F9F"
-color_datos   <- "#6485BC"
-color_mediana <- "#D55E00"
-color_media   <- "#111827"
+  bp<-barplot(media,xlab=expression("Cepas de " * italic("Rhizobium") * " sp."),
+  ylab="Nitrógeno (mg)",ylim=c(0,40),names.arg = names_trt,cex.axis = 0.7,
+  col=adjustcolor(color_barras, alpha.f = 0.3))
+  arrows(bp,inferior,bp,superior,
+  length = 0.05, lwd=1.5,code=3,angle=90)
+  arrows(bp,inferior,bp,superior,
+  length = 0.05, lwd=1.5,code=3,angle=45)
+  points(x=rep(bp,each=5),y=ydatos,pch=24,cex=0.5,col=color_datos)
+  points(x=bp,y=mediana,pch=18,cex=0.9,col=color_mediana)
+  points(x=bp,y=media,pch=16,cex=0.9,col=color_media)
 
-# Estadísticos
-media    <- descriptiva$nitrogeno[, "Media"]
-mediana  <- descriptiva$nitrogeno[, "Mediana"]
-inferior <- descriptiva$nitrogeno[, "Inferior"]
-superior <- descriptiva$nitrogeno[, "Superior"]
-names_trt<- descriptiva$tratamiento
+  # Leyenda
+  legend("topright",legend = c("Observaciones", "Media", "Mediana"),
+    pch = c(24, 16, 18),pt.bg = c(color_datos, NA, NA),
+    col = c(color_datos, color_media, color_mediana),
+    pt.cex = c(0.8, 1.0, 1.2),bty = "n",cex = 0.85)
+  #Fig 1. Gráfico descriptivo para el contenido de nitróneno en 6 tratamientos de cepas de Rhizoboum.
+  #.      La barras indican la media del tratamiento la cual también está resaltada en negro. La mediana
+  #       se resalta en color naranja. Las observaciones originales están en color azul y las barras 
+  #.      de error indican los límites del intervalo de confianza de 95%.
+  if (jpg) dev.off()
+}
+barras_personalizado(
+  media    = descriptiva$nitrogeno[, "Media"],
+  mediana  = descriptiva$nitrogeno[, "Mediana"],
+  inferior = descriptiva$nitrogeno[, "Inferior"],
+  superior = descriptiva$nitrogeno[, "Superior"],
+  names_trt = descriptiva$tratamiento,
+  color_barras  = "#397F9F",
+  color_datos   = "#6485BC",
+  color_mediana = "#D55E00",
+  color_media   = "#111827",
+  repeticiones=5,ydatos = datos$nitrogeno[order(datos$tratamiento)],jpg=TRUE)
 
-bp<-barplot(media,xlab=expression("Cepas de " * italic("Rhizobium") * " sp."),
- ylab="Nitrógeno (mg)",ylim=c(0,40),names.arg = names_trt,cex.axis = 0.7,
- col=adjustcolor(color_barras, alpha.f = 0.3))
-arrows(bp,inferior,bp,superior,
-length = 0.05, lwd=1.5,code=3,angle=90)
-arrows(bp,inferior,bp,superior,
-length = 0.05, lwd=1.5,code=3,angle=45)
-points(x=rep(bp,each=5),y=datos$nitrogeno[order(datos$tratamiento)],pch=24,cex=0.5,col=color_datos)
-points(x=bp,y=mediana,pch=18,cex=0.9,col=color_mediana)
-points(x=bp,y=media,pch=16,cex=0.9,col=color_media)
-
-# Leyenda
-legend("topright",legend = c("Observaciones", "Media", "Mediana"),
-  pch = c(24, 16, 18),pt.bg = c(color_datos, NA, NA),
-  col = c(color_datos, color_media, color_mediana),
-  pt.cex = c(0.8, 1.0, 1.2),bty = "n",cex = 0.85)
-#Fig 1. Gráfico descriptivo para el contenido de nitróneno en 6 tratamientos de cepas de Rhizoboum.
-#.      La barras indican la media del tratamiento la cual también está resaltada en negro. La mediana
-#       se resalta en color naranja. Las observaciones originales están en color azul y las barras 
-#.      de error indican los límites del intervalo de confianza de 95%.
-dev.off()
 
 #barplot(descriptiva2[,"Media"])
