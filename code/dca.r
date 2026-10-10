@@ -77,7 +77,7 @@ str(descriptiva2)
 
 boxplot(nitrogeno~tratamiento,data=datos)
 barras_personalizado<-function(media,mediana,inferior,superior,color_barras,color_datos,
- color_media,color_mediana,names_trt,repeticiones,ydatos,jpg=FALSE){
+ color_media,color_mediana,color_error,names_trt,repeticiones,ydatos,jpg=FALSE){
   num_oro<-(1+sqrt(5))/2
   if (jpg) {
     jpeg(file.path(".","salidas","graficos","barras.jpg"),units="px",
@@ -87,9 +87,9 @@ barras_personalizado<-function(media,mediana,inferior,superior,color_barras,colo
   bp<-barplot(media,xlab=expression("Cepas de " * italic("Rhizobium") * " sp."),
   ylab="Nitrógeno (mg)",ylim=c(0,40),names.arg = names_trt,cex.axis = 0.7,
   col=adjustcolor(color_barras, alpha.f = 0.3))
-  arrows(bp,inferior,bp,superior,
+  arrows(bp,inferior,bp,superior,col=color_error,
   length = 0.05, lwd=1.5,code=3,angle=90)
-  arrows(bp,inferior,bp,superior,
+  arrows(bp,inferior,bp,superior,col=color_error,
   length = 0.05, lwd=1.5,code=3,angle=45)
   points(x=rep(bp,each=5),y=ydatos,pch=24,cex=0.5,col=color_datos)
   points(x=bp,y=mediana,pch=18,cex=0.9,col=color_mediana)
@@ -112,10 +112,11 @@ barras_personalizado(
   inferior = descriptiva$nitrogeno[, "Inferior"],
   superior = descriptiva$nitrogeno[, "Superior"],
   names_trt = descriptiva$tratamiento,
-  color_barras  = "#397F9F",
-  color_datos   = "#6485BC",
-  color_mediana = "#D55E00",
-  color_media   = "#111827",
+  color_barras  = "#7BC96F",
+  color_datos   = "#2E7D32",
+  color_mediana = "#FF8C42",
+  color_media   = "#E65100",
+  color_error   = "#1B5E20",
   repeticiones=5,ydatos = datos$nitrogeno[order(datos$tratamiento)],jpg=TRUE)
 
 
