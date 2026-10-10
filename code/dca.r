@@ -108,8 +108,7 @@ points(x=bp,y=media,pch=16,cex=0.9,col=color_media)
 legend("topright",legend = c("Observaciones", "Media", "Mediana"),
   pch = c(24, 16, 18),pt.bg = c(color_datos, NA, NA),
   col = c(color_datos, color_media, color_mediana),
-  pt.cex = c(0.8, 1.0, 1.2),bty = "n",cex = 0.85
-)
+  pt.cex = c(0.8, 1.0, 1.2),bty = "n",cex = 0.85)
 #Fig 1. Gráfico descriptivo para el contenido de nitróneno en 6 tratamientos de cepas de Rhizoboum.
 #.      La barras indican la media del tratamiento la cual también está resaltada en negro. La mediana
 #       se resalta en color naranja. Las observaciones originales están en color azul y las barras 
