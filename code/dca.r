@@ -24,8 +24,8 @@ datos <- data.frame(
 datos$tratamiento_c<-as.character(datos$tratamiento)
 str(datos)
 
-library(readxl)
-datosexcel<-read_excel(file.path(".","BD","dca.xlsx"))
+#library(readxl)
+datosexcel<-readxl::read_excel(file.path(".","BD","dca.xlsx"))
 datosexcel<-as.data.frame(datosexcel)
 datosexcel$tratamiento_f<-as.factor(datosexcel$tratamiento)
 str(datosexcel)
