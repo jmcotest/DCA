@@ -10,8 +10,6 @@ dir.create(file.path(".","rmd"),showWarnings = FALSE, recursive=TRUE)
 dir.create(file.path(".","qmd"),showWarnings = FALSE, recursive=TRUE)
 dir.create(file.path(".","BD"),showWarnings = FALSE, recursive=TRUE)
 
-5
-
 #Datos 
 datos <- data.frame(
       tratamiento = factor(rep(c("3D0K1", "3D0K5", "3D0K4", "3D0K7", "3D0K13", "Compuesto"), each = 5)),
