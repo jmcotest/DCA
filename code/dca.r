@@ -76,17 +76,29 @@ str(descriptiva2)
 
 
 boxplot(nitrogeno~tratamiento,data=datos)
+
 barras_personalizado<-function(media,mediana,inferior,superior,color_barras,color_datos,
- color_media,color_mediana,color_error,names_trt,repeticiones,ydatos,jpg=FALSE){
+ color_media,color_mediana,color_error,names_trt,repeticiones,ydatos,jpg=FALSE,typeplot="barras"){
   num_oro<-(1+sqrt(5))/2
   if (jpg) {
     jpeg(file.path(".","salidas","graficos","barras.jpg"),units="px",
     height=5*1200,width=num_oro*5*1200,res=1200,quality = 100)
   }
 
-  bp<-barplot(media,xlab=expression("Cepas de " * italic("Rhizobium") * " sp."),
-  ylab="Nitrógeno (mg)",ylim=c(0,40),names.arg = names_trt,cex.axis = 0.7,
-  col=adjustcolor(color_barras, alpha.f = 0.3))
+  if (typeplot=="barras"){
+    bp<-barplot(media,xlab=expression("Cepas de " * italic("Rhizobium") * " sp."),
+    ylab="Nitrógeno (mg)",ylim=c(0,40),names.arg = names_trt,cex.axis = 0.7,
+    col=adjustcolor(color_barras, alpha.f = 0.3))
+  }
+  if (typeplot=="lineas"){
+    plot(x=1:6,y=media,axes=FALSE,ylab="Nitrógeno (mg)",
+      xlab=expression("Cepas de " * italic("Rhizobium") * " sp."),
+      ylim=c(5 * floor(min(inferior) / 5), 5 * ceiling(max(superior) / 5))
+    )
+    bp=1:6
+    axis(1,1:6,names_trt,las=1,cex.axis=0.9,tick=FALSE)
+    axis(2)
+  }
   arrows(bp,inferior,bp,superior,col=color_error,
   length = 0.05, lwd=1.5,code=3,angle=90)
   arrows(bp,inferior,bp,superior,col=color_error,
@@ -106,6 +118,8 @@ barras_personalizado<-function(media,mediana,inferior,superior,color_barras,colo
   #.      de error indican los límites del intervalo de confianza de 95%.
   if (jpg) dev.off()
 }
+
+
 barras_personalizado(
   media    = descriptiva$nitrogeno[, "Media"],
   mediana  = descriptiva$nitrogeno[, "Mediana"],
@@ -117,7 +131,11 @@ barras_personalizado(
   color_mediana = "#FF8C42",
   color_media   = "#E65100",
   color_error   = "#1B5E20",
-  repeticiones=5,ydatos = datos$nitrogeno[order(datos$tratamiento)],jpg=TRUE)
+  repeticiones=5,ydatos = datos$nitrogeno[order(datos$tratamiento)],typeplot="lineas",
+  jpg=TRUE)
 
 
 #barplot(descriptiva2[,"Media"])
+
+
+
