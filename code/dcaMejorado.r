@@ -359,7 +359,7 @@ m<-m1
   resumenMCMC<-do.call(rbind,resumenMCMC)
   resumenMCMC
 
-# Alternativa a las puedas de comparación múltiple: 
+# Comparación de tratamientos: 
 # Probabilidad de ser el mejor y el peor tratamiento
 # Esto es mejor que las pruebas de comparación multiples en cuanto a una toma 
 # de decisiones más clara.
@@ -387,7 +387,6 @@ p_check_c<-sapply(p_check,function(x) format(round(x,4), nsmall=4))
 p_check_c["t6"]<-""
 #Juntando complementos
 complementos<-cbind(pbest=pbest_c, pworst=pworst_c, pref=p_ref_c, pcheck=p_check_c)
-
 
 #####################################
 # 3. COMPLEMENTAR Y AJUSTAR GRÁFICO #
@@ -428,13 +427,12 @@ graficos_personalizado(
   }
 )
 
-#' 
-#' ### Gráfica resumen más completo basado en el resumen de la distribución *a posteriori*
-## ----out.width='100%', fig.align='center'-------------------------------------
-  # Fig n. Contenido promedio de nitrógeno en plantas de trébol inoculadas con diferentes cepas de Rhizobium.
-  #        Las barras de error indican los límites del intervalo de mas alta densidad a posterior de 90%. En la
-  #        parte superior de límite se indica la probabilidad de que ese tratamiento sea el mejor mientras en el
-  #        límite inferior se indica la probabilidad de ser el peor. En rojo se indica la probabilidad de que ese
-  #        tratamiento supere la concentración de 25 mg. Al lado izquiero de la media se indica la probabilidad de
-  #        superar el testigo Compuesto. La línea punteada indica el valor de referencia de 25 mg.
+# 
+# Gráfica resumen más completo basado en el resumen de la distribución *a posteriori*
+# Fig n. Contenido promedio de nitrógeno en plantas de trébol inoculadas con diferentes cepas de Rhizobium.
+#        Las barras de error indican los límites del intervalo de mas alta densidad a posterior de 90%. En la
+#        parte superior de límite se indica la probabilidad de que ese tratamiento sea el mejor mientras en el
+#        límite inferior se indica la probabilidad de ser el peor. En rojo se indica la probabilidad de que ese
+#        tratamiento supere la concentración de 25 mg. Al lado izquiero de la media se indica la probabilidad de
+#        superar el testigo Compuesto. La línea punteada indica el valor de referencia de 25 mg.
 
