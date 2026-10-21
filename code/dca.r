@@ -137,5 +137,5 @@ barras_personalizado(
 
 #barplot(descriptiva2[,"Media"])
 
-
+lm(nitrogeno~tratamiento,data=datos)
 

@@ -180,7 +180,7 @@ graficos_personalizado(
   xlab=expression("Cepas de " * italic("Rhizobium") * " sp."), 
   ylab="Nitrógeno (mg)")
   #Fig 1. Gráfico descriptivo para el contenido de nitróneno en 6 tratamientos de cepas de Rhizoboum.
-  #.      La barras indican la Media del tratamiento la cual también está resaltada en negro. La Mediana
+  #.      La barras indican la media del tratamiento la cual también está resaltada en negro. La Mediana
   #       se resalta en color naranja. Las observaciones originales están en color azul y las barras 
   #.      de error indican los límites del intervalo de confianza de 95%.
 
@@ -199,13 +199,14 @@ modelo<-formula(nitrogeno~tratamiento)
 
 # NOTA IMPORTANTE:
 #   ESTO SÓLO SE HACE SÍ POR TEORÍA TENEMOS DUDAS 
-#   DE LA HOMOGENEIDAD DE LAS VARIANZAS.
+#   DE LA HOMOGENEIDAD/HETEROGENEIDAD DE LAS VARIANZAS.
 
-#   ASÍ ESTO ES DETERMINAR HOMOGENEIDAD DE VARIANZAS 
+#   ASÍ A CONOTINUACION SE PRESENTA EL CODIGO PARA
+#   DETERMINAR HOMOGENEIDAD DE VARIANZAS 
 #   POR RAZONES EMPIRICAS.
 
 # RECORDAR: 
-#   LAS HIPOTESIS NULAS JAMAS SE PUEDEN PROBAR, 
+#   LAS HIPÓTESIS NULAS JAMÁS SE PUEDEN PROBAR, 
 #   SOLO SE PUEDEN RECHAZAR.
 ####################################################
 
