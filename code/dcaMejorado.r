@@ -323,7 +323,7 @@ descriptiva<-descriptiva[,-which(names(descriptiva)=="letras")]
 
 library(MCMCglmm)
 # Modelo para varianzas homogéneas
-m0<-MCMCglmm(nitrogeno ~ tratamiento, data = datos, nitt=1e6,verbose=FALSE)
+m0<-MCMCglmm(modelo, data = datos, nitt=1e6,verbose=FALSE)
 
 # Modelo con varianzas heterogeneas
 m1<-MCMCglmm(modelo, data = datos, rcov=~idh(tratamiento):units, nitt=1e6,verbose=FALSE)
@@ -347,6 +347,7 @@ m1<-MCMCglmm(modelo, data = datos, rcov=~idh(tratamiento):units, nitt=1e6,verbos
 m<-m1
 
 ## Cálculo de los predichos obtenidos Bayes - Bayesian Linear Prediction
+#Opción 1. A mano
  MCMC_trt<-list(
   t6=m$Sol[,1],
   t1=m$Sol[,1]+m$Sol[,2],
@@ -355,10 +356,18 @@ m<-m1
   t4=m$Sol[,1]+m$Sol[,5],
   t5=m$Sol[,1]+m$Sol[,6])
 
+#Opción 2. Usando matrices
+# Predicciones de todas las iteraciones MCMC
+tmp<- m[["X"]] %*% t(m[["Sol"]])
+grupo <- datos[["tratamiento"]]
+indices <- split(seq_len(nrow(tmp)), grupo)
+
+resultado <- lapply(indices, function(i) colMeans(tmp[i, , drop = FALSE]))
+
 #Resumen de distribucion *a posteriori*
-  resumenMCMC<-lapply(MCMC_trt,function(x) c(mean(x),HPDinterval(x,prob=0.90)))
-  resumenMCMC<-do.call(rbind,resumenMCMC)
-  resumenMCMC
+resumenMCMC<-lapply(MCMC_trt,function(x) c(mean(x),HPDinterval(x,prob=0.90)))
+resumenMCMC<-do.call(rbind,resumenMCMC)
+resumenMCMC
 
 # Comparación de tratamientos: 
 # Probabilidad de ser el mejor y el peor tratamiento
