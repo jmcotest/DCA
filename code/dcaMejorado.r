@@ -1,5 +1,5 @@
 rm(list=ls(all=TRUE))
-
+library(writexl)
 #Generando estructuras de carpetas
 # Eliminar la carpeta salidas y todo su contenido
 if (dir.exists(file.path(".", "salidas"))) {
@@ -36,11 +36,11 @@ str(datos)
 #library(readxl)
 datosexcel<-readxl::read_excel(file.path(".","BD","dca.xlsx"))
 datosexcel<-as.data.frame(datosexcel)
-datosexcel$tratamiento_f<-as.factor(datosexcel$tratamiento)
+datos$tratamiento_c<-as.character(datos$tratamiento)
+datosexcel$tratamiento<-as.factor(datosexcel$tratamiento)
 str(datosexcel)
 levels(datosexcel$tratamiento_f)
 nlevels(datosexcel$tratamiento_f)
-
 
 #####################################
 # 1. ANÁLISIS GRÁFICO DE LOS DATOS  #
@@ -92,7 +92,7 @@ str(descriptiva2)
 boxplot(nitrogeno~tratamiento,data=datos,col="blue",xlab="Tratamiento", ylab="Nitrógeno (mg)")
 # Operaciona previas a la gráfica descriptiva
 descriptiva<-data.frame(tratamiento=descriptiva$tratamiento,descriptiva$nitrogeno)
-descriptiva<-descriptiva[order(descriptiva$Media),]
+#descriptiva<-descriptiva[order(descriptiva$Media),]
 
 # Ordenar los datos originales según el mismo orden
 datos_originales <- datos[order(
@@ -100,8 +100,10 @@ datos_originales <- datos[order(
   )),]
 datos_originales
 
+
 # Personalización de gráficos
-graficos_personalizado<-function(data_graf,ydatos,prefixjpg =NULL,typeplot="barras",
+graficos_personalizado<-function(data_graf,datos, formula_m,prefixjpg =NULL,typeplot="barras",
+  ordenar=NULL,
   colores=list(color_barras  = "#7BC96F",
     color_datos   = "#2E7D32",
     color_Mediana = "#FF8C42",
@@ -109,8 +111,28 @@ graficos_personalizado<-function(data_graf,ydatos,prefixjpg =NULL,typeplot="barr
     color_error   = "#1B5E20"
   ),add=NULL,...){
   
+  # Variables obtenidas de la fórmula
+  v_resp   <- all.vars(formula_m[[2]])
+  v_clasif <- all.vars(formula_m[[3]])
+  
+  # Extraer observaciones originales
+  ydatos <- datos[[v_resp]]
+  grupo  <- datos[[v_clasif]]
+
+  # Ordenar tratamientos según el estadístico seleccionado
+  if (!is.null(ordenar)) {
+    data_graf <- data_graf[order(data_graf[[ordenar]], decreasing = TRUE),, drop = FALSE]
+  }
+
+  # Reordenar observaciones originales
+  grupo <- factor(datos[[v_clasif]],levels = as.character(data_graf[[v_clasif]]))
+  idx <- order(grupo)
+
+  ydatos <- ydatos[idx]
+  grupo <- grupo[idx]
+    
   # Crear variables locales a partir de las columnas
-  list2env(data_graf, envir = environment())
+  list2env(as.list(data_graf), envir = environment())
   list2env(colores, envir = environment())
 
   num_oro<-(1+sqrt(5))/2
@@ -128,20 +150,37 @@ graficos_personalizado<-function(data_graf,ydatos,prefixjpg =NULL,typeplot="barr
     x<-bp
     test<-data.frame(x0=bp,y0=Inferior,x1=bp,y1=Superior)
   }
-  if (typeplot=="lineas"){
+  if (typeplot=="lineas"||typeplot=="lineas-violines"){
     bp<-seq_along(Media)
     plot(x=bp,y=Media,axes=FALSE,
       ylim=ylim,xlim=c(min(bp)-0.5,max(bp)+0.5),...)
+    
+    
+  # Dibujar violines
+    if (typeplot == "lineas-violines") {
+      for (i in bp) {
+        y <- ydatos[grupo == levels(grupo)[i]]
+        y <- y[is.finite(y)]
+        # evitar errores si hay menos de 2 observaciones o 
+        # si todas las observaciones son iguales
+        if (length(y) < 2 || length(unique(y)) < 2) next
+        d <- density(y)
+        ancho <- 0.35 * d$y / max(d$y)
+        polygon(x = c(i - ancho, rev(i + ancho)), y = c(d$x, rev(d$x)),
+          col = adjustcolor(color_barras, alpha.f = 0.25),
+          border = color_barras
+        )
+      }
+    }
     axis(1,seq_along(Media),tratamiento,las=1,cex.axis=0.9,tick=FALSE)
     axis(2)
   }
 
   if (typeplot == "boxplot") {
     bp <- seq_along(Media)
-    grupo <- rep(bp, times = N)
     boxplot(
-      split(ydatos, factor(grupo, levels = bp)),
-      names = names_trt,
+      split(ydatos, grupo, drop = TRUE),
+      names = tratamiento,
       col = adjustcolor(color_barras, alpha.f = 0.3),
       ylim = ylim,
       cex.axis = 0.7,
@@ -150,15 +189,20 @@ graficos_personalizado<-function(data_graf,ydatos,prefixjpg =NULL,typeplot="barr
   }
 
   if (typeplot!="boxplot"){
+    # Conversión de unidades del eje X a pulgadas
+    escala_x <- par("pin")[1] / diff(par("usr")[1:2])
+    # Longitud correspondiente al 15 % de la separación
+    separacion <- median(diff(sort(bp)))
+    length_error <- 0.05 * separacion * escala_x
     arrows(bp,Inferior,bp,Superior,col=color_error,
-    length = 0.05, lwd=1.5,code=3,angle=90)
+    length = length_error, lwd=1.5,code=3,angle=90)
     arrows(bp,Inferior,bp,Superior,col=color_error,
-    length = 0.05, lwd=1.5,code=3,angle=45)
+    length = length_error, lwd=1.5,code=3,angle=45)
   }
 
   points(x=bp,y=Mediana,pch=18,cex=0.9,col=color_Mediana)
   points(x=bp,y=Media,pch=16,cex=0.9,col=color_Media)
-  points(x=jitter(rep(bp,N), amount = 0.05),y=ydatos,pch=24,cex=0.5,col=color_datos,bg=color_datos)
+  points(x=jitter(as.numeric(grupo), amount = 0.05),y=ydatos,pch=24,cex=0.5,col=color_datos,bg=color_datos)
 
   # Leyenda
   legend("topright",legend = c("Observaciones", "Media", "Mediana"),
@@ -174,11 +218,13 @@ graficos_personalizado<-function(data_graf,ydatos,prefixjpg =NULL,typeplot="barr
 
 # Uso de la funcion graficos
 graficos_personalizado(
-  data_graf = as.list(descriptiva),
-  ydatos = datos_originales$nitrogeno,
-  typeplot="lineas", prefixjpg="inicial",
+  data_graf = descriptiva[,c("tratamiento","Media", "Mediana", "Inferior", "Superior")],
+  datos=datos[,c("nitrogeno", "tratamiento")],
+  formula_m=nitrogeno~tratamiento,
+  ordenar="Media", typeplot="lineas-violines", prefixjpg="inicial",
   xlab=expression("Cepas de " * italic("Rhizobium") * " sp."), 
   ylab="Nitrógeno (mg)")
+  #Para el de lineas
   #Fig 1. Gráfico descriptivo para el contenido de nitróneno en 6 tratamientos de cepas de Rhizoboum.
   #.      La barras indican la media del tratamiento la cual también está resaltada en negro. La Mediana
   #       se resalta en color naranja. Las observaciones originales están en color azul y las barras 
@@ -309,6 +355,14 @@ graficos_personalizado(
     })
   }
 )
+
+###########################################################
+# 4. Guardando resultados en archivos de salida           #
+###########################################################
+
+write_xlsx(descriptiva, path = file.path(".","salidas","excel","descriptiva.xlsx"))
+
+
 #Quitando letras del data.frame descriptiva para el análisis moderno
 descriptiva<-descriptiva[,-which(names(descriptiva)=="letras")]
 ###############################
@@ -382,7 +436,7 @@ resumenMCMC
 
 MatrixMCMC<-as.matrix(do.call(cbind,MCMC_trt))
 rank_MatrixMCMC<-apply(MatrixMCMC,1,rank)
-pbest<-rowSums(rank_MatrixMCMC==6)/ncol(rank_MatrixMCMC)
+pbest<-rowSums(rank_MatrixMCMC==nlevels(grupo))/ncol(rank_MatrixMCMC)
 pworst<-rowSums(rank_MatrixMCMC==1)/ncol(rank_MatrixMCMC)
 
 pbest_c<-format(round(pbest,4), nsmall=4) 
@@ -393,9 +447,9 @@ p_ref<-sapply(MCMC_trt,function(x) sum(x > 25) / length(x))
 p_ref_c<-sapply(p_ref,function(x) format(round(x,4), nsmall=4))
 
 #Nuevo probabilidad de superar el testigo Compuesto
-p_check<-sapply(MCMC_trt,function(x) sum(x > MCMC_trt[["t6"]]) / length(x))
+p_check<-sapply(MCMC_trt,function(x) sum(x > MCMC_trt[["Compuesto"]]) / length(x))
 p_check_c<-sapply(p_check,function(x) format(round(x,4), nsmall=4))
-p_check_c["t6"]<-""
+p_check_c["Compuesto"]<-""
 #Juntando complementos
 complementos<-cbind(pbest=pbest_c, pworst=pworst_c, pref=p_ref_c, pcheck=p_check_c)
 
