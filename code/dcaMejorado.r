@@ -348,13 +348,14 @@ m<-m1
 
 ## Cálculo de los predichos obtenidos Bayes - Bayesian Linear Prediction
 #Opción 1. A mano
- MCMC_trt<-list(
-  t6=m$Sol[,1],
-  t1=m$Sol[,1]+m$Sol[,2],
-  t2=m$Sol[,1]+m$Sol[,3],
-  t3=m$Sol[,1]+m$Sol[,4],
-  t4=m$Sol[,1]+m$Sol[,5],
-  t5=m$Sol[,1]+m$Sol[,6])
+grupo <- datos[["tratamiento"]]
+MCMC_trt<-list(m$Sol[,1],
+  m$Sol[,1]+m$Sol[,2],
+  m$Sol[,1]+m$Sol[,3],
+  m$Sol[,1]+m$Sol[,4],
+  m$Sol[,1]+m$Sol[,5],
+  m$Sol[,1]+m$Sol[,6])
+names(MCMC_trt)<-levels(grupo)
 
 #Opción 2. Usando matrices
 # Predicciones de todas las iteraciones MCMC
