@@ -129,10 +129,10 @@ tabla_letras
 analisis_post_modelo <- merge(descriptiva,tabla_letras, by.x = "tratamiento",
  by.y = "tratamiento", all.x = TRUE)
 
-analisis_post_model0[["LS Mean"]] <- analisis_post_modelo[["emmean"]] 
+#analisis_post_model[["LS Mean"]] <- analisis_post_modelo[["emmean"]] 
 
 graficos_personalizado(
-  data_g = analisis_post_modelo,formula_g=tratamiento~'LS Mean'+Mediana+lower.CL+upper.CL,
+  data_g = analisis_post_modelo,formula_g=tratamiento~emmean+Mediana+lower.CL+upper.CL,
   datos=datos,formula_m=nitrogeno~tratamiento,
   ordenar="emmean", typeplot="lineas",
   prefixjpg="clasico_homogeneo",
