@@ -430,7 +430,7 @@ tmp<- m[["X"]] %*% t(m[["Sol"]])
 grupo <- datos[["tratamiento"]]
 indices <- split(seq_len(nrow(tmp)), grupo)
 
-resultado <- lapply(indices, function(i) colMeans(tmp[i, , drop = FALSE]))
+MCMC_trt <- lapply(indices, function(i) colMeans(tmp[i, , drop = FALSE]))
 
 #Resumen de distribucion *a posteriori*
 resumenMCMC<-lapply(MCMC_trt,function(x) c(mean(x),HPDinterval(x,prob=0.90)))
