@@ -373,8 +373,8 @@ graficos_personalizado(
 ###########################################################
 # 4. Guardando resultados en archivos de salida           #
 ###########################################################
-write_xlsx(list(anova=anova_m, descriptiva_post_modelo=descriptiva_post_modelo), 
-path = file.path(".","salidas","excel","descriptiva_post_modelo.xlsx"))
+write_xlsx(list(anova=anova_m, modelo=descriptiva_post_modelo), 
+path = file.path(".","salidas","excel","modelo_clasico.xlsx"))
 
 #########################################################################################
 #########################################################################################
@@ -499,4 +499,10 @@ graficos_personalizado(
 #        límite inferior se indica la probabilidad de ser el peor. En rojo se indica la probabilidad de que ese
 #        tratamiento supere la concentración de 25 mg. Al lado izquiero de la media se indica la probabilidad de
 #        superar el testigo Compuesto. La línea punteada indica el valor de referencia de 25 mg.
+
+###########################################################
+# 4. Guardando resultados en archivos de salida           #
+###########################################################
+write_xlsx(list(modelo=descriptiva_post_modelo), 
+path = file.path(".","salidas","excel","modelo_moderno.xlsx"))
 
