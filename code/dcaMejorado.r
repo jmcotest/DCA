@@ -275,9 +275,9 @@ modelo<-formula(nitrogeno~tratamiento)
 #   ESTO SÓLO SE HACE SÍ POR TEORÍA TENEMOS DUDAS 
 #   DE LA HOMOGENEIDAD/HETEROGENEIDAD DE LAS VARIANZAS.
 
-#   ASÍ A CONOTINUACION SE PRESENTA EL CODIGO PARA
+#   ASÍ A CONTINUACIÓN SE PRESENTA EL CÓDIGO PARA
 #   DETERMINAR HOMOGENEIDAD DE VARIANZAS 
-#   POR RAZONES EMPIRICAS.
+#   POR RAZONES EMPÍRICAS.
 
 # RECORDAR: 
 #   LAS HIPÓTESIS NULAS JAMÁS SE PUEDEN PROBAR, 
@@ -353,11 +353,11 @@ tabla_letras$.group <- trimws(tabla_letras$.group)
 # Visualización de la tabla final
 tabla_letras
 
-descriptiva_post_modelo <- merge(descriptiva,tabla_letras, by.x = "tratamiento",
+analisis_post_modelo <- merge(descriptiva,tabla_letras, by.x = "tratamiento",
  by.y = "tratamiento", all.x = TRUE)
 
 graficos_personalizado(
-  data_g = descriptiva_post_modelo,formula_g=tratamiento~emmean+Mediana+lower.CL+upper.CL,
+  data_g = analisis_post_modelo,formula_g=tratamiento~emmean+Mediana+lower.CL+upper.CL,
   datos=datos,formula_m=nitrogeno~tratamiento,
   ordenar="emmean", typeplot="lineas",
   prefixjpg="clasico_homogeneo",
@@ -365,7 +365,7 @@ graficos_personalizado(
   ylab="Nitrógeno (mg)", 
   add = function(g) {
     with(g,{
-      text(x=bp, y=Superior, labels=.group, col = "#1B5E20", cex=0.9, offset=0.5,pos=3)
+      text(x=bp, y=upper.CL, labels=.group, col = "#1B5E20", cex=0.9, offset=0.5,pos=3)
     })
   }
 )
@@ -373,7 +373,7 @@ graficos_personalizado(
 ###########################################################
 # 4. Guardando resultados en archivos de salida           #
 ###########################################################
-write_xlsx(list(anova=anova_m, modelo=descriptiva_post_modelo), 
+write_xlsx(list(anova=anova_m, modelo=analisis_post_modelo), 
 path = file.path(".","salidas","excel","modelo_clasico.xlsx"))
 
 #########################################################################################
@@ -469,11 +469,11 @@ complementos<-data.frame(tratamiento=rownames(resumenMCMC), resumenMCMC, pbest=p
 #####################################
 # 3. COMPLEMENTAR Y AJUSTAR GRÁFICO #
 #####################################
-descriptiva_post_modelo <- merge(descriptiva,complementos, by.x = "tratamiento",
+analisis_post_modelo <- merge(descriptiva,complementos, by.x = "tratamiento",
  by.y = "tratamiento", all.x = TRUE)
 
 graficos_personalizado(
-  data_g = descriptiva_post_modelo,formula_g=tratamiento~Est.Bayes+Mediana+lower.HPD+upper.HPD,
+  data_g = analisis_post_modelo,formula_g=tratamiento~Est.Bayes+Mediana+lower.HPD+upper.HPD,
   datos=datos,formula_m=nitrogeno~tratamiento,
   typeplot="lineas-violines",
   ordenar="Est.Bayes",
@@ -503,6 +503,6 @@ graficos_personalizado(
 ###########################################################
 # 4. Guardando resultados en archivos de salida           #
 ###########################################################
-write_xlsx(list(modelo=descriptiva_post_modelo), 
+write_xlsx(list(modelo=analisis_post_modelo), 
 path = file.path(".","salidas","excel","modelo_moderno.xlsx"))
 
