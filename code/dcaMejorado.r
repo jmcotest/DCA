@@ -433,7 +433,7 @@ indices <- split(seq_len(nrow(tmp)), grupo)
 MCMC_trt <- lapply(indices, function(i) colMeans(tmp[i, , drop = FALSE]))
 
 #Resumen de distribucion *a posteriori*
-resumenMCMC<-lapply(MCMC_trt,function(x) c(mean(x),HPDinterval(x,prob=0.90)))
+resumenMCMC<-lapply(MCMC_trt,function(x) c(mean(x),HPDinterval(as.mcmc(x),prob=0.90)))
 resumenMCMC<-do.call(rbind,resumenMCMC)
 colnames(resumenMCMC)<-c("Est.Bayes", "lower.HPD", "upper.HPD")
 
