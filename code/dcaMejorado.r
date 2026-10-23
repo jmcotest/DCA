@@ -102,37 +102,63 @@ datos_originales
 
 
 # Personalización de gráficos
-graficos_personalizado<-function(data_graf,datos, formula_m,prefixjpg =NULL,typeplot="barras",
-  ordenar=NULL,
+graficos_personalizado<-function(data_g,formula_g,datos, formula_m,prefixjpg =NULL,typeplot="barras",ordenar=NULL,
   colores=list(color_barras  = "#7BC96F",
     color_datos   = "#2E7D32",
     color_Mediana = "#FF8C42",
     color_Media   = "#E65100",
     color_error   = "#1B5E20"
-  ),add=NULL,...){
+  ),ylim=NULL,add=NULL,...){
+  
+  #######################################################################################
+  # Función para crear gráficos personalizados
+  # data_g: data.frame con las estadísticas descriptivas debe contener las columnas 
+  #           de tratamiento, Media, Mediana, Inferior, Superior. Puede contener otras 
+  #           columnas adicionales que se pueden usar para personalizar el gráfico. 
+  #           P.e. Estimate o letras de comparacion múltiple o probabilidades.
+  # formula_g: fórmula para extraer las columnas correspondientes de tratamiento,
+  #            Media, Mediana, Inferior, Superior
+  # datos: data.frame con los datos originales debe contener mínimo dos columnas una
+  #        de ellas es la variable de respuesta y la otra es la variable de clasificación
+  # formula_m: fórmula para extraer las variables de respuesta y clasificación
+  # prefixjpg: prefijo para el nombre del archivo de salida (opcional)
+  # typeplot: tipo de gráfico ("barras", "lineas", "lineas-violines", "boxplot")
+  # ordenar: columna para ordenar los tratamientos (opcional)
+  #          p.e. Media o Mediana o tratamiento 
+  # colores: lista de colores para personalizar el gráfico 
+  # add: función para agregar elementos adicionales al gráfico (opcional)
+  # ...: argumentos adicionales para la función de gráficos
+  #########################################################################################
   
   # Variables obtenidas de la fórmula
-  v_resp   <- all.vars(formula_m[[2]])
-  v_clasif <- all.vars(formula_m[[3]])
-  
+  v_resp   <- all.vars(formula_m)[[1]]
+  v_clasif <- all.vars(formula_m)[[2]]
+
   # Extraer observaciones originales
   ydatos <- datos[[v_resp]]
   grupo  <- datos[[v_clasif]]
 
   # Ordenar tratamientos según el estadístico seleccionado
   if (!is.null(ordenar)) {
-    data_graf <- data_graf[order(data_graf[[ordenar]], decreasing = TRUE),, drop = FALSE]
+    data_g <- data_g[order(data_g[[ordenar]], decreasing = TRUE),, drop = FALSE]
   }
 
   # Reordenar observaciones originales
-  grupo <- factor(datos[[v_clasif]],levels = as.character(data_graf[[v_clasif]]))
+  grupo <- factor(datos[[v_clasif]],levels = as.character(data_g[[v_clasif]]))
   idx <- order(grupo)
 
   ydatos <- ydatos[idx]
   grupo <- grupo[idx]
     
   # Crear variables locales a partir de las columnas
-  list2env(as.list(data_graf), envir = environment())
+  #list2env(as.list(data_graf), envir = environment())
+  #if (!is.null(Estimate)) Media <- Estimate
+  Media <- data_g[[all.vars(formula_g)[[2]]]]
+  Mediana <- data_g[[all.vars(formula_g)[[3]]]]
+  Inferior <- data_g[[all.vars(formula_g)[[4]]]]
+  Superior <- data_g[[all.vars(formula_g)[[5]]]]
+  tratamiento <- data_g[[all.vars(formula_g)[[1]]]]  
+
   list2env(colores, envir = environment())
 
   num_oro<-(1+sqrt(5))/2
@@ -140,8 +166,12 @@ graficos_personalizado<-function(data_graf,datos, formula_m,prefixjpg =NULL,type
     jpeg(file.path(".","salidas","graficos",paste0(typeplot,"_",prefixjpg,".jpg")),units="cm",
     height=15,width=num_oro*15,res=600,quality = 100)
   }
-  u_mayor<-5
-  ylim<-c(u_mayor * floor(min(Inferior) / u_mayor), u_mayor * ceiling(max(Superior) / u_mayor))
+  args <- list(...)
+
+  if ("ylim" %in% names(args)) ylim <- args$ylim else {
+    u_mayor <- 5
+    ylim <- u_mayor * c( floor(min(Inferior) * 0.9 / u_mayor), ceiling(max(Superior) * 1.1 / u_mayor))
+  }
 
   if (typeplot=="barras"){
     bp<-barplot(Media-min(ylim),offset=min(ylim),
@@ -154,8 +184,7 @@ graficos_personalizado<-function(data_graf,datos, formula_m,prefixjpg =NULL,type
     bp<-seq_along(Media)
     plot(x=bp,y=Media,axes=FALSE,
       ylim=ylim,xlim=c(min(bp)-0.5,max(bp)+0.5),...)
-    
-    
+      
   # Dibujar violines
     if (typeplot == "lineas-violines") {
       for (i in bp) {
@@ -205,22 +234,21 @@ graficos_personalizado<-function(data_graf,datos, formula_m,prefixjpg =NULL,type
   points(x=jitter(as.numeric(grupo), amount = 0.05),y=ydatos,pch=24,cex=0.5,col=color_datos,bg=color_datos)
 
   # Leyenda
-  legend("topright",legend = c("Observaciones", "Media", "Mediana"),
+  legend("topright",legend = c("Observaciones", all.vars(formula_g)[[2]], "Mediana"),
     pch = c(24, 16, 18),pt.bg = c(color_datos, NA, NA),
     col = c(color_datos, color_Media, color_Mediana),
     pt.cex = c(0.8, 1.0, 1.2),bty = "n",cex = 0.85)
   
-  #pasar todas la variables de data_graf dentro de la función
-  if (is.function(add)) add(c(data_graf, list(bp = bp)))
-
+  #pasar todas la variables de data_g dentro de la función
+  if (is.function(add)) add(c(data_g, list(bp = bp, grupo = grupo)))
   if (!is.null(prefixjpg)) dev.off()
+
 }
 
 # Uso de la funcion graficos
 graficos_personalizado(
-  data_graf = descriptiva[,c("tratamiento","Media", "Mediana", "Inferior", "Superior")],
-  datos=datos[,c("nitrogeno", "tratamiento")],
-  formula_m=nitrogeno~tratamiento,
+  data_g = descriptiva,formula_g=tratamiento~Media+Mediana+Inferior+Superior,
+  datos=datos,formula_m=nitrogeno~tratamiento,
   ordenar="Media", typeplot="lineas-violines", prefixjpg="inicial",
   xlab=expression("Cepas de " * italic("Rhizobium") * " sp."), 
   ylab="Nitrógeno (mg)")
@@ -265,26 +293,26 @@ car::leveneTest(modelo,data=datos)
 ######################################################
 # 2.1.2. ANOVA varianza homogenea     #
 
-  modelo_lm <- lm(modelo, data = datos)
-  summary(modelo_lm)
-  str(modelo_lm)
-  anova_modelo<-anova(modelo_lm)
-  anova_modelo
-  str(anova_modelo)
+  m <- lm(modelo, data = datos)
+  summary(m)
+  str(m)
+  anova_m<-anova(m)
+  anova_m
+  str(anova_m)
 
 ######################################################
 # 2.1.3. Cálculo de los predichos obtenidos por mínimos cuadrados - LSMEAN     #
 # Deben usarse en el caso de desbalance por repeticiones
 #Opcion 1: Usando la función predict
 nuevos <- data.frame(tratamiento = levels(datos$tratamiento))
-media<-predict(modelo_lm, newdata = nuevos)
+media<-predict(m, newdata = nuevos)
 #Opcion 2: Usando la función emmeans
-media <- emmeans::emmeans(modelo_lm, ~ tratamiento)
+media <- emmeans::emmeans(m, ~ tratamiento)
 
 #######################################################
 # 2.1.4. Prueba de comparacion múltiple     #
 #Opcion 1: Usando la función TukeyHSD
-tukey <- TukeyHSD(aov(modelo_lm), "tratamiento")
+tukey <- TukeyHSD(aov(m), "tratamiento")
 print(tukey)
 plot(tukey)
 
@@ -295,14 +323,14 @@ letrasTukey<-letras <- multcomp::cld(media,adjust = "tukey", Letters = letters,
 letras
 
 #Opcion 2: Usando la función glht y Tukey
-tukey <- glht(aov(modelo_lm),linfct = mcp(tratamiento = "Tukey"))
+tukey <- glht(aov(m),linfct = mcp(tratamiento = "Tukey"))
 summary(tukey)
 plot(tukey)
 
 #Opcion 3: Usando la función glht y Dunnett
 # # Definir Compuesto como referencia
 datos$tratamiento <- relevel(datos$tratamiento, ref = "Compuesto")
-dunnett <- glht(aov(modelo_lm),linfct = mcp(tratamiento = "Dunnett"),
+dunnett <- glht(aov(m),linfct = mcp(tratamiento = "Dunnett"),
                  alternative = "two.sided")
 summary(dunnett)
 confint(dunnett)
@@ -325,33 +353,19 @@ tabla_letras$.group <- trimws(tabla_letras$.group)
 # Visualización de la tabla final
 tabla_letras
 
-# Asegurarse que los dos archivos estan ordenados de la misma manera
-descriptiva <- descriptiva[order(descriptiva$tratamiento), ]
-tabla_letras <- tabla_letras[order(tabla_letras$tratamiento), ]
-
-#Reemplazando valores de la tabla descriptiva con los valores del ANOVA
-descriptiva[,c("Media", "Inferior", "Superior")] <- tabla_letras[,c("emmean", "lower.CL", "upper.CL")]
-descriptiva$letras <- tabla_letras$.group
-
-#Ordenar la para la gráfica
-descriptiva<-descriptiva[order(descriptiva$Media,decreasing = TRUE),]
-
-# Ordenar los datos originales según el mismo orden
-datos_originales <- datos[order(
-  match(as.character(datos$tratamiento),as.character(descriptiva$tratamiento)
-  )),]
-datos_originales
+descriptiva_post_modelo <- merge(descriptiva,tabla_letras, by.x = "tratamiento",
+ by.y = "tratamiento", all.x = TRUE)
 
 graficos_personalizado(
-  data_graf = as.list(descriptiva),
-  ydatos = datos_originales$nitrogeno,
-  typeplot="lineas",
+  data_g = descriptiva_post_modelo,formula_g=tratamiento~emmean+Mediana+lower.CL+upper.CL,
+  datos=datos,formula_m=nitrogeno~tratamiento,
+  ordenar="emmean", typeplot="lineas",
   prefixjpg="clasico_homogeneo",
   xlab=expression("Cepas de " * italic("Rhizobium") * " sp."), 
   ylab="Nitrógeno (mg)", 
   add = function(g) {
     with(g,{
-      text(x=bp, y=Superior+1, labels=letras, col = "#1B5E20", cex=0.9)
+      text(x=bp, y=Superior, labels=.group, col = "#1B5E20", cex=0.9, offset=0.5,pos=3)
     })
   }
 )
@@ -359,12 +373,11 @@ graficos_personalizado(
 ###########################################################
 # 4. Guardando resultados en archivos de salida           #
 ###########################################################
+write_xlsx(list(anova=anova_m, descriptiva_post_modelo=descriptiva_post_modelo), 
+path = file.path(".","salidas","excel","descriptiva_post_modelo.xlsx"))
 
-write_xlsx(descriptiva, path = file.path(".","salidas","excel","descriptiva.xlsx"))
-
-
-#Quitando letras del data.frame descriptiva para el análisis moderno
-descriptiva<-descriptiva[,-which(names(descriptiva)=="letras")]
+#########################################################################################
+#########################################################################################
 ###############################
 # 2.2 ANALISIS MODERNO        #
 ###############################
@@ -422,9 +435,9 @@ resultado <- lapply(indices, function(i) colMeans(tmp[i, , drop = FALSE]))
 #Resumen de distribucion *a posteriori*
 resumenMCMC<-lapply(MCMC_trt,function(x) c(mean(x),HPDinterval(x,prob=0.90)))
 resumenMCMC<-do.call(rbind,resumenMCMC)
-resumenMCMC
+colnames(resumenMCMC)<-c("Est.Bayes", "lower.HPD", "upper.HPD")
 
-# Comparación de tratamientos: 
+# Analisis de la distribución *a posteriori* para cada tratamiento: 
 # Probabilidad de ser el mejor y el peor tratamiento
 # Esto es mejor que las pruebas de comparación multiples en cuanto a una toma 
 # de decisiones más clara.
@@ -451,43 +464,29 @@ p_check<-sapply(MCMC_trt,function(x) sum(x > MCMC_trt[["Compuesto"]]) / length(x
 p_check_c<-sapply(p_check,function(x) format(round(x,4), nsmall=4))
 p_check_c["Compuesto"]<-""
 #Juntando complementos
-complementos<-cbind(pbest=pbest_c, pworst=pworst_c, pref=p_ref_c, pcheck=p_check_c)
+complementos<-data.frame(tratamiento=rownames(resumenMCMC), resumenMCMC, pbest=pbest_c, pworst=pworst_c, pref=p_ref_c, pcheck=p_check_c)
 
 #####################################
 # 3. COMPLEMENTAR Y AJUSTAR GRÁFICO #
 #####################################
-# Asegurarse que los dos archivos estan ordenados de la misma manera
-descriptiva <- descriptiva[order(descriptiva$tratamiento), ]
-resumenMCMC <- resumenMCMC[order(rownames(resumenMCMC)), ]
-complementos <- complementos[order(rownames(complementos)), ]
-
-#Reemplazando valores de la tabla descriptiva con los valores del análisis bayesiano
-descriptiva[,c("Media", "Inferior", "Superior")] <- resumenMCMC
-descriptiva <- cbind(descriptiva, complementos)
-
-#Ordenar la para la gráfica
-descriptiva<-descriptiva[order(descriptiva$Media,decreasing = TRUE),]
-
-# Ordenar los datos originales según el mismo orden
-datos_originales <- datos[order(
-  match(as.character(datos$tratamiento),as.character(descriptiva$tratamiento)
-  )),]
-datos_originales
+descriptiva_post_modelo <- merge(descriptiva,complementos, by.x = "tratamiento",
+ by.y = "tratamiento", all.x = TRUE)
 
 graficos_personalizado(
-  data_graf = as.list(descriptiva),
-  ydatos = datos_originales$nitrogeno,
-  typeplot="lineas",
+  data_g = descriptiva_post_modelo,formula_g=tratamiento~Est.Bayes+Mediana+lower.HPD+upper.HPD,
+  datos=datos,formula_m=nitrogeno~tratamiento,
+  typeplot="lineas-violines",
+  ordenar="Est.Bayes",
   prefixjpg="moderno_heterogeneo", 
   xlab=expression("Cepas de " * italic("Rhizobium") * " sp."), 
   ylab="Nitrógeno (mg)",
   add = function(g) {
     with(g, {
-      text(x=bp, y=Superior+1, labels=pbest, col = "#000000", cex=0.6)
-      text(x=bp, y=Inferior-1, labels=pworst, col = "#000000", cex=0.6)
+      text(x=bp, y=lower.HPD, labels=pbest, col = "#000000", cex=0.6,offset=0.1,pos=1)
+      text(x=bp, y=upper.HPD, labels=pworst, col = "#000000", cex=0.6,offset=0.1,pos=3)
       abline(h=25,lty=2,lwd=2,col = "#8B0000")
-      text(x=bp+0.01, y=25+0.5, labels=pref, col = "#8B0000", cex=0.6,adj=0)
-      text(x=bp+0.05, y=Media, labels=pcheck, col = "#E65100", cex=0.6,adj=0)
+      text(x=bp, y=25, labels=pref, col = "#8B0000", cex=0.6,adj=0,offset=0.1,pos=3)
+      text(x=bp, y=Est.Bayes, labels=pcheck, col = "#E65100", cex=0.6,adj=0,offset=0.4,pos=2)
     })
   }
 )
