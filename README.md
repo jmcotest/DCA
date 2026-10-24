@@ -4,6 +4,8 @@ Material docente para el análisis de experimentos bajo un **diseño completamen
 
 El ejemplo estudia el contenido de nitrógeno en plantas de trébol sometidas a seis tratamientos de inoculación con *Rhizobium*, con cinco repeticiones por tratamiento. La variable respuesta es `nitrogeno`, expresada en miligramos, y el factor de clasificación es `tratamiento`.
 
+**Fuente del ejemplo:** tomado de Steel, R. G. D., & Torrie, J. H. (1988). *Bioestadística: principios y procedimientos* (2.ª ed.). McGraw-Hill, pp. 134–135.
+
 ## Contenido
 
 - Estadísticas descriptivas por tratamiento e intervalos de confianza.
