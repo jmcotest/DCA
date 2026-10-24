@@ -17,8 +17,8 @@ graficos_personalizado<-function(data_g,formula_g,datos, formula_m,prefixjpg =NU
     color_Mediana = "#FF8C42",
     color_Media   = "#E65100",
     color_error   = "#1B5E20"
-  ),ylim=NULL,add=NULL,...){
-  
+  ),add=NULL,...){
+
   #######################################################################################
   # Función para crear gráficos personalizados
   # data_g: data.frame con las estadísticas descriptivas debe contener las columnas 
@@ -40,8 +40,8 @@ graficos_personalizado<-function(data_g,formula_g,datos, formula_m,prefixjpg =NU
   #########################################################################################
   
   # Variables obtenidas de la fórmula
-  v_resp   <- all.vars(formula_m)[[1]]
-  v_clasif <- all.vars(formula_m)[[2]]
+  v_resp   <- all.vars(formula_m)[[1L]]
+  v_clasif <- all.vars(formula_m)[[2L]]
 
   # Extraer observaciones originales
   ydatos <- datos[[v_resp]]
@@ -62,23 +62,23 @@ graficos_personalizado<-function(data_g,formula_g,datos, formula_m,prefixjpg =NU
   # Crear variables locales a partir de las columnas
   #list2env(as.list(data_graf), envir = environment())
   #if (!is.null(Estimate)) Media <- Estimate
-  Media <- data_g[[all.vars(formula_g)[[2]]]]
-  Mediana <- data_g[[all.vars(formula_g)[[3]]]]
-  Inferior <- data_g[[all.vars(formula_g)[[4]]]]
-  Superior <- data_g[[all.vars(formula_g)[[5]]]]
-  tratamiento <- data_g[[all.vars(formula_g)[[1]]]]  
+  Media <- data_g[[all.vars(formula_g)[[2L]]]]
+  Mediana <- data_g[[all.vars(formula_g)[[3L]]]]
+  Inferior <- data_g[[all.vars(formula_g)[[4L]]]]
+  Superior <- data_g[[all.vars(formula_g)[[5L]]]]
+  tratamiento <- data_g[[all.vars(formula_g)[[1L]]]]  
 
   list2env(colores, envir = environment())
 
-  num_oro<-(1+sqrt(5))/2
+  num_oro<-(1L+sqrt(5L))/2L
   if (!is.null(prefixjpg)) {
     jpeg(file.path(".","salidas","graficos",paste0(typeplot,"_",prefixjpg,".jpg")),units="cm",
-    height=15,width=num_oro*15,res=600,quality = 100)
+    height=15L,width=num_oro*15L,res=600L,quality = 100L)
   }
   args <- list(...)
 
   if ("ylim" %in% names(args)) ylim <- args$ylim else {
-    u_mayor <- 5
+    u_mayor <- 5L
     ylim <- u_mayor * c( floor(min(Inferior) * 0.9 / u_mayor), ceiling(max(Superior) * 1.1 / u_mayor))
   }
 
@@ -86,8 +86,6 @@ graficos_personalizado<-function(data_g,formula_g,datos, formula_m,prefixjpg =NU
     bp<-barplot(Media-min(ylim),offset=min(ylim),
     ylim=ylim,names.arg = tratamiento,cex.axis = 0.7,
     col=adjustcolor(color_barras, alpha.f = 0.3),...)
-    x<-bp
-    test<-data.frame(x0=bp,y0=Inferior,x1=bp,y1=Superior)
   }
   if (typeplot=="lineas"||typeplot=="lineas-violines"){
     bp<-seq_along(Media)
@@ -101,7 +99,7 @@ graficos_personalizado<-function(data_g,formula_g,datos, formula_m,prefixjpg =NU
         y <- y[is.finite(y)]
         # evitar errores si hay menos de 2 observaciones o 
         # si todas las observaciones son iguales
-        if (length(y) < 2 || length(unique(y)) < 2) next
+        if (length(y) < 2L || length(unique(y)) < 2L) next
         d <- density(y)
         ancho <- 0.35 * d$y / max(d$y)
         polygon(x = c(i - ancho, rev(i + ancho)), y = c(d$x, rev(d$x)),
@@ -110,8 +108,8 @@ graficos_personalizado<-function(data_g,formula_g,datos, formula_m,prefixjpg =NU
         )
       }
     }
-    axis(1,seq_along(Media),tratamiento,las=1,cex.axis=0.9,tick=FALSE)
-    axis(2)
+    axis(1L,seq_along(Media),tratamiento,las=1L,cex.axis=0.9,tick=FALSE)
+    axis(2L)
   }
 
   if (typeplot == "boxplot") {
@@ -128,23 +126,23 @@ graficos_personalizado<-function(data_g,formula_g,datos, formula_m,prefixjpg =NU
 
   if (typeplot!="boxplot"){
     # Conversión de unidades del eje X a pulgadas
-    escala_x <- par("pin")[1] / diff(par("usr")[1:2])
+    escala_x <- par("pin")[1L] / diff(par("usr")[1L:2L])
     # Longitud correspondiente al 15 % de la separación
     separacion <- median(diff(sort(bp)))
     length_error <- 0.05 * separacion * escala_x
     arrows(bp,Inferior,bp,Superior,col=color_error,
-    length = length_error, lwd=1.5,code=3,angle=90)
+    length = length_error, lwd=1.5,code=3L,angle=90L)
     arrows(bp,Inferior,bp,Superior,col=color_error,
-    length = length_error, lwd=1.5,code=3,angle=45)
+    length = length_error, lwd=1.5,code=3L,angle=45L)
   }
 
-  points(x=bp,y=Mediana,pch=18,cex=0.9,col=color_Mediana)
-  points(x=bp,y=Media,pch=16,cex=0.9,col=color_Media)
-  points(x=jitter(as.numeric(grupo), amount = 0.05),y=ydatos,pch=24,cex=0.5,col=color_datos,bg=color_datos)
+  points(x=bp,y=Mediana,pch=18L,cex=0.9,col=color_Mediana)
+  points(x=bp,y=Media,pch=16L,cex=0.9,col=color_Media)
+  points(x=jitter(as.numeric(grupo), amount = 0.05),y=ydatos,pch=24L,cex=0.5,col=color_datos,bg=color_datos)
 
   # Leyenda
-  legend("topright",legend = c("Observaciones", all.vars(formula_g)[[2]], "Mediana"),
-    pch = c(24, 16, 18),pt.bg = c(color_datos, NA, NA),
+  legend("topright",legend = c("Observaciones", all.vars(formula_g)[[2L]], "Mediana"),
+    pch = c(24L, 16L, 18L),pt.bg = c(color_datos, NA, NA),
     col = c(color_datos, color_Media, color_Mediana),
     pt.cex = c(0.8, 1.0, 1.2),bty = "n",cex = 0.85)
   
