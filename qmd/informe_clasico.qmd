@@ -1,0 +1,388 @@
+---
+title: "Contenido de nitrógeno en plantas de trébol"
+subtitle: "Análisis de un diseño completamente al azar"
+lang: es
+format:
+  html:
+    embed-resources: true
+    toc: false
+  docx:
+    toc: false
+  pdf:
+    pdf-engine: xelatex
+    toc: false
+    keep-tex: true
+execute:
+  echo: false
+  warning: false
+  message: false
+  error: false
+params:
+  raiz_proyecto: null
+  archivo_rds: "salidas/modelo_clasico.rds"
+  archivo_grafico: null
+  alpha: 0.05
+  nivel_ic: 0.95
+  metodo_nitrogeno: null
+---
+
+<!--
+UBICACION: guarde este archivo en la raiz del proyecto o en qmd/.
+PRIMERO ejecute su programa 2a_dca_Clean_Clasico_Tukey.r.
+Este documento LEE su RDS y el grafico existente: no ejecuta ese programa,
+no borra salidas y no vuelve a ajustar el modelo.
+
+Renderizar desde la raiz del proyecto, si el archivo esta en qmd/:
+  quarto render qmd/informe_clasico.qmd --to html --output-dir ../salidas/html
+  quarto render qmd/informe_clasico.qmd --to docx --output-dir ../salidas/word
+  quarto render qmd/informe_clasico.qmd --to pdf  --output-dir ../salidas/pdf
+
+Si la deteccion automatica no encuentra el proyecto o hay varios graficos,
+indique raiz_proyecto y archivo_grafico en params (use / en las rutas).
+metodo_nitrogeno debe describir el protocolo real y su referencia completa.
+No se inventa la referencia incompleta Smith() del Word.
+alpha y nivel_ic deben coincidir con los usados al generar el RDS.
+-->
+
+```{r}
+#| label: preparar-informe
+#| include: false
+
+# Numeros en la escala original, con coma decimal.
+numero <- function(x, digitos = 2) {
+  formatC(x, format = "f", digits = digitos, decimal.mark = ",")
+}
+valor_p <- function(p) {
+  if (length(p) != 1L || !is.finite(p) || p < 0 || p > 1) {
+    stop("Se encontro un valor p ausente o invalido en el RDS.")
+  }
+  if (p == 0) return("p < 2,23e-308 (limite numerico)")
+  if (p < 0.0001) {
+    return(paste0("p = ", formatC(p, format = "e", digits = 3,
+                                 decimal.mark = ",")))
+  }
+  paste0("p = ", numero(p, 4))
+}
+lista_texto <- function(x) {
+  if (!length(x)) return("")
+  if (length(x) == 1L) return(x)
+  paste0(paste(head(x, -1L), collapse = ", "), " y ", tail(x, 1L))
+}
+no_vacio <- function(x) {
+  !is.null(x) && length(x) == 1L && !is.na(x) && nzchar(x)
+}
+es_absoluta <- function(x) grepl("^(/|[A-Za-z]:[/\\\\]|\\\\\\\\)", x)
+resolver <- function(x, raiz) {
+  if (es_absoluta(x)) x else file.path(raiz, x)
+}
+
+alpha <- as.numeric(params$alpha)
+nivel_ic <- as.numeric(params$nivel_ic)
+if (length(alpha) != 1L || !is.finite(alpha) || alpha <= 0 || alpha >= 1 ||
+    length(nivel_ic) != 1L || !is.finite(nivel_ic) ||
+    nivel_ic <= 0 || nivel_ic >= 1) {
+  stop("alpha y nivel_ic deben ser numeros entre cero y uno.")
+}
+# Las salidas del programa adjunto usan Tukey al 5% e IC del 95%.
+if (abs(alpha - 0.05) > 1e-10 || abs(nivel_ic - 0.95) > 1e-10) {
+  stop("El programa adjunto guarda letras al 5% e IC del 95%. ",
+       "Mantenga alpha=0.05 y nivel_ic=0.95 o adapte tambien el programa fuente.")
+}
+
+if (no_vacio(params$raiz_proyecto)) {
+  raiz <- normalizePath(params$raiz_proyecto, winslash = "/", mustWork = TRUE)
+} else {
+  # Quarto ejecuta normalmente desde la carpeta del .qmd.
+  candidatas <- unique(c(Sys.getenv("QUARTO_PROJECT_DIR"),
+                         getwd(), dirname(getwd())))
+  candidatas <- candidatas[nzchar(candidatas)]
+  candidatas <- candidatas[vapply(candidatas, function(x) {
+    file.exists(resolver(params$archivo_rds, x))
+  }, logical(1))]
+  if (!length(candidatas)) {
+    stop("No se encontro ", params$archivo_rds,
+         ". Ejecute primero su programa R. Guarde el QMD en la raiz o en qmd/, ",
+         "o defina params$raiz_proyecto con la ruta de su proyecto.")
+  }
+  raiz <- normalizePath(candidatas[1L], winslash = "/", mustWork = TRUE)
+}
+ruta_rds <- resolver(params$archivo_rds, raiz)
+if (!file.exists(ruta_rds)) stop("No existe el RDS: ", ruta_rds)
+resultado <- readRDS(ruta_rds)
+if (!is.list(resultado)) stop("El RDS debe contener la lista guardada por su programa.")
+
+# Su saveRDS repite el nombre 'modelo'. Por eso NO se usa resultado$modelo
+# para obtener ambos objetos. Se identifican por clase y por columnas.
+idx_lm <- which(vapply(resultado, function(x) inherits(x, "lm"), logical(1)))
+idx_tabla <- which(vapply(resultado, function(x) {
+  is.data.frame(x) && "tratamiento" %in% names(x) &&
+    any(c("emmean", "LS Mean") %in% names(x))
+}, logical(1)))
+if (length(idx_lm) != 1L || length(idx_tabla) != 1L) {
+  stop("Se espera un modelo lm y una tabla de medias con tratamiento y emmean/LS Mean. ",
+       "Revise la estructura con str(readRDS(...)).")
+}
+m <- resultado[[idx_lm]]
+tabla <- as.data.frame(resultado[[idx_tabla]])
+requeridos <- c("anova", "shapiro", "levene")
+faltantes <- setdiff(requeridos, names(resultado))
+if (length(faltantes)) {
+  stop("Faltan objetos en el RDS: ", paste(faltantes, collapse = ", "),
+       ". Guarde anova=anova_m, shapiro=sh y levene=lt y repita su programa.")
+}
+anova_guardada <- resultado[["anova"]]
+shapiro_guardado <- resultado[["shapiro"]]
+levene_guardado <- resultado[["levene"]]
+
+# Validacion del modelo especifico al que corresponde este informe.
+datos_modelo <- model.frame(m)
+if (!all(c("nitrogeno", "tratamiento") %in% names(datos_modelo)) ||
+    length(attr(terms(m), "term.labels")) != 1L ||
+    attr(terms(m), "term.labels") != "tratamiento" ||
+    !is.numeric(datos_modelo$nitrogeno) ||
+    !is.factor(datos_modelo$tratamiento) ||
+    attr(terms(m), "intercept") != 1L || !is.null(m$weights)) {
+  stop("Este informe requiere un lm sin ponderaciones: nitrogeno ~ tratamiento.")
+}
+datos_modelo$tratamiento <- droplevels(datos_modelo$tratamiento)
+n_por_trat <- table(datos_modelo$tratamiento)
+n_total <- nrow(datos_modelo)
+k <- length(n_por_trat)
+if (k < 2L) stop("Se requieren al menos dos tratamientos.")
+texto_repeticiones <- if (length(unique(n_por_trat)) == 1L) {
+  paste0(as.integer(n_por_trat[1L]), " repeticiones por tratamiento")
+} else {
+  paste0("un numero desigual de repeticiones (",
+         lista_texto(paste0(names(n_por_trat), ": ", as.integer(n_por_trat))), ")")
+}
+
+extraer_p_tabla <- function(x, fila = 1L) {
+  x <- as.data.frame(x)
+  columna <- which(names(x) == "Pr(>F)")
+  if (length(columna) != 1L || fila < 1L || fila > nrow(x)) {
+    stop("No se pudo identificar Pr(>F) en una de las pruebas guardadas.")
+  }
+  as.numeric(x[fila, columna])
+}
+fila_trat <- match("tratamiento", trimws(rownames(anova_guardada)))
+if (is.na(fila_trat)) stop("La ANOVA guardada no contiene la fila tratamiento.")
+p_anova <- extraer_p_tabla(anova_guardada, fila_trat)
+p_levene <- extraer_p_tabla(levene_guardado)
+p_shapiro <- as.numeric(shapiro_guardado$p.value)
+# Esta llamada tambien valida que los tres valores p sean escalares validos.
+invisible(lapply(c(p_anova, p_levene, p_shapiro), valor_p))
+f_anova <- as.numeric(anova_guardada[fila_trat, "F value"])
+gl_trat <- as.integer(anova_guardada[fila_trat, "Df"])
+gl_error <- df.residual(m)
+
+# car::leveneTest usa por defecto center=median (Brown-Forsythe).
+# Se recupera el centro si el atributo heading lo identifica.
+encabezado_levene <- paste(attr(levene_guardado, "heading"), collapse = " ")
+mediana_levene <- grepl("center\\s*=\\s*median", encabezado_levene)
+nombre_levene <- if (mediana_levene) {
+  "la prueba de Levene centrada en la mediana (variante de Brown–Forsythe)"
+} else {
+  "la prueba de Levene guardada por el programa"
+}
+
+col_media <- if ("emmean" %in% names(tabla)) "emmean" else "LS Mean"
+columnas <- c("tratamiento", col_media, "SE", "lower.CL", "upper.CL", ".group")
+if (!all(columnas %in% names(tabla))) {
+  stop("La tabla guardada debe contener: ", paste(columnas, collapse = ", "))
+}
+tabla$tratamiento <- as.character(tabla$tratamiento)
+tabla$.group <- trimws(as.character(tabla$.group))
+if (anyDuplicated(tabla$tratamiento) ||
+    !setequal(tabla$tratamiento, names(n_por_trat)) ||
+    any(!is.finite(tabla[[col_media]])) ||
+    any(!is.finite(tabla$lower.CL)) || any(!is.finite(tabla$upper.CL))) {
+  stop("Los tratamientos o los valores de la tabla de medias no coinciden con el modelo.")
+}
+tabla <- tabla[order(-tabla[[col_media]], tabla$tratamiento), , drop = FALSE]
+row.names(tabla) <- NULL
+# Los IC se conservan como fueron guardados; las letras corresponden a Tukey.
+
+lider <- tabla$tratamiento[1L]
+texto_mayores <- paste0(
+  "Los dos mayores valores estimados de contenido de nitrógeno correspondieron a ",
+  tabla$tratamiento[1L], " y ", tabla$tratamiento[2L], " (",
+  numero(tabla[[col_media]][1L]), " y ", numero(tabla[[col_media]][2L]),
+  " mg, respectivamente; @fig-nitrogeno). Este orden describe las estimaciones ",
+  "puntuales y no implica por sí solo que ambos superen a todos los demás tratamientos."
+)
+
+# El RDS no guarda el objeto tukey. Se reconstruye solo ese resumen
+# desde el modelo YA ajustado, sin volver a estimar lm ni usar el Excel.
+tukey <- TukeyHSD(aov(m), which = "tratamiento", conf.level = nivel_ic)$tratamiento
+contraste_lider <- function(otro) {
+  directo <- paste(lider, otro, sep = "-")
+  inverso <- paste(otro, lider, sep = "-")
+  if (directo %in% rownames(tukey)) return(c(dif=tukey[directo,"diff"], p=tukey[directo,"p adj"]))
+  if (inverso %in% rownames(tukey)) return(c(dif=-tukey[inverso,"diff"], p=tukey[inverso,"p adj"]))
+  stop("No se pudo recuperar el contraste Tukey: ", lider, " frente a ", otro)
+}
+otros <- tabla$tratamiento[-1L]
+ct <- vapply(otros, contraste_lider, numeric(2))
+inferiores <- otros[ct["dif", ] > 0 & ct["p", ] < alpha]
+no_difieren <- otros[ct["p", ] >= alpha]
+texto_tukey <- paste0("Al comparar ", lider, " con los otros tratamientos, ")
+texto_tukey <- paste0(texto_tukey, if (length(inferiores)) {
+  paste0("la prueba de Tukey detectó un contenido de nitrógeno mayor que en ",
+         lista_texto(inferiores), ". ")
+} else {
+  "la prueba de Tukey no detectó diferencias significativas con ninguno de ellos. "
+})
+if (length(no_difieren)) {
+  texto_tukey <- paste0(texto_tukey, "No se detectaron diferencias significativas frente a ",
+                        lista_texto(no_difieren),
+                        "; ello no demuestra equivalencia entre tratamientos. ")
+}
+texto_tukey <- paste0(texto_tukey,
+                     "Las comparaciones se interpretan bajo el modelo de varianza común.")
+
+texto_levene <- if (p_levene < alpha) {
+  paste0("La prueba de Levene señaló evidencia contra la homogeneidad de varianzas (",
+         valor_p(p_levene), "). Por tanto, la suposición de varianza común debe revisarse.")
+} else {
+  paste0("Según la prueba de Levene, no se rechazó la hipótesis nula de homogeneidad de varianzas (",
+         valor_p(p_levene), "). Este resultado no demuestra que las varianzas sean iguales.")
+}
+texto_shapiro <- if (p_shapiro < alpha) {
+  paste0("La prueba de Shapiro–Wilk aplicada a los residuos señaló evidencia contra la normalidad (",
+         valor_p(p_shapiro), ").")
+} else {
+  paste0("La prueba de Shapiro–Wilk aplicada a los residuos no detectó evidencia suficiente contra la normalidad (",
+         valor_p(p_shapiro), "); no rechazar esta hipótesis no demuestra normalidad.")
+}
+texto_anova <- paste0(
+  "El análisis de varianza ",
+  if (p_anova < alpha) "detectó diferencias" else "no detectó diferencias",
+  " estadísticamente significativas entre las medias de los tratamientos (F = ",
+  numero(f_anova, 4), "; gl = ", gl_trat, " y ", gl_error, "; ", valor_p(p_anova), ").",
+  if (p_anova < alpha) " Esto indica que al menos una media difiere de las demás." else
+    " Este resultado no demuestra igualdad ni equivalencia de las medias."
+)
+texto_cautela <- if (p_levene < alpha || p_shapiro < alpha) {
+  paste0("Dado que al menos un diagnóstico señaló una desviación de los supuestos, ",
+         "la ANOVA y las comparaciones de Tukey se presentan como resultados del modelo ",
+         "clásico ajustado y deben interpretarse con cautela. Es necesario revisar los ",
+         "gráficos de residuos y considerar un análisis de sensibilidad adecuado antes ",
+         "de formular conclusiones definitivas. El contraste de Levene no significativo, ",
+         "si corresponde, no compensa una desviación de normalidad.")
+} else {
+  paste0("Las pruebas realizadas no detectaron desviaciones al nivel de significancia elegido. ",
+         "Deben complementarse con los gráficos de residuos y el conocimiento del experimento; ",
+         "la independencia se sustenta en la asignación aleatoria y en la unidad experimental.")
+}
+
+# Utiliza el grafico YA guardado en salidas, sin volver a dibujarlo.
+if (no_vacio(params$archivo_grafico)) {
+  grafico <- resolver(params$archivo_grafico, raiz)
+  if (!file.exists(grafico)) stop("No existe el grafico indicado: ", grafico)
+} else {
+  candidatos <- list.files(file.path(raiz, "salidas"), recursive = TRUE,
+                           full.names = TRUE,
+                           pattern = "\\.(jpg|jpeg|png|pdf)$", ignore.case = TRUE)
+  candidatos <- candidatos[grepl("clasico_homogeneo", basename(candidatos),
+                                 ignore.case = TRUE)]
+  # Preferir imagenes raster para que el mismo archivo sirva en HTML/Word/PDF.
+  raster <- candidatos[grepl("\\.(jpg|jpeg|png)$", candidatos, ignore.case = TRUE)]
+  if (length(raster)) candidatos <- raster
+  if (length(candidatos) != 1L) {
+    stop("Se esperaba un grafico con 'clasico_homogeneo' en salidas. Se encontraron ",
+         length(candidatos), ". Defina params$archivo_grafico con la ruta exacta. ",
+         "Candidatos: ", paste(candidatos, collapse = "; "))
+  }
+  grafico <- candidatos[1L]
+}
+grafico <- normalizePath(grafico, winslash = "/", mustWork = TRUE)
+if (grepl("\\.pdf$", grafico, ignore.case = TRUE) &&
+    !knitr::is_latex_output()) {
+  stop("Para HTML o Word indique un grafico JPG o PNG de salidas/graficos.")
+}
+```
+
+# Materiales y métodos
+
+## Diseño experimental
+
+Se utilizó un diseño completamente al azar con `r k` tratamientos y `r texto_repeticiones`, para un total de `r n_total` unidades experimentales. Se evaluaron tratamientos de inoculación con cepas de *Rhizobium*, identificados como `r lista_texto(as.character(levels(datos_modelo$tratamiento)))`. La unidad experimental fue una matera con una planta de trébol, inoculada a los 30 días después de la siembra. La variable respuesta fue el contenido de nitrógeno en el follaje, expresado en miligramos.
+
+```{r}
+#| label: protocolo-nitrogeno
+#| results: asis
+if (no_vacio(params$metodo_nitrogeno)) {
+  cat(params$metodo_nitrogeno, "\n\n")
+} else {
+  cat("La descripción del procedimiento de cuantificación y su referencia bibliográfica ",
+      "deben completarse con el protocolo efectivamente utilizado; la referencia ",
+      "incompleta del documento base no permite identificar el método.\n\n", sep = "")
+}
+```
+
+## Análisis estadístico
+
+El análisis se realizó en el ambiente R. Se ajustó un modelo lineal con el tratamiento como efecto fijo para evaluar las diferencias en el contenido de nitrógeno. Se utilizó `r nombre_levene` para examinar la homogeneidad de varianzas y la prueba de Shapiro–Wilk para examinar la normalidad de los residuos. La independencia de los errores se sustenta en la aleatorización y en la identificación de unidades experimentales distintas; no se demuestra mediante estas pruebas.
+
+El efecto de los tratamientos se evaluó mediante el análisis de varianza. Las medias estimadas por el modelo se obtuvieron con el paquete **emmeans** y la comparación múltiple se realizó mediante la prueba de Tukey, con un nivel de significancia del `r numero(100 * alpha, 0)` %. Se utilizó **multcomp**, con apoyo de **multcompView**, para representar las comparaciones mediante letras, y **car** para la prueba de Levene. Se calcularon intervalos de confianza del `r numero(100 * nivel_ic, 0)` % para las medias estimadas por el modelo. Las letras corresponden a comparaciones de Tukey y no deben confundirse con el ajuste de los intervalos para cada media.
+
+# Resultados y discusión
+
+`r texto_levene` `r texto_shapiro`
+
+`r texto_anova`
+
+`r texto_mayores`
+
+`r texto_tukey`
+
+`r texto_cautela`
+
+```{r}
+#| label: fig-nitrogeno
+#| fig-cap: "Contenido de nitrógeno en el follaje de plantas de trébol según el tratamiento. Los valores estimados por el modelo se resaltan en negro, la mediana en naranja y las observaciones originales en azul, según el gráfico producido por el programa adjunto. Las barras de error representan los límites de confianza del 95 % guardados por emmeans. Tratamientos que no comparten letras presentan diferencias significativas según Tukey al 5 %. Compartir una letra indica que no se detectó una diferencia; no demuestra equivalencia."
+#| out-width: "100%"
+knitr::include_graphics(grafico)
+```
+
+## Medias estimadas y comparación de tratamientos
+
+```{r}
+#| label: tbl-medias
+#| tbl-cap: "Medias estimadas del contenido de nitrógeno, error estándar y límites de confianza del 95 %. Las letras corresponden a la comparación múltiple de Tukey."
+resumen_medias <- data.frame(
+  Tratamiento = tabla$tratamiento,
+  `Media estimada (mg)` = numero(tabla[[col_media]]),
+  `Error estándar` = numero(tabla$SE),
+  `Límite inferior` = numero(tabla$lower.CL),
+  `Límite superior` = numero(tabla$upper.CL),
+  `Grupo Tukey` = tabla$.group,
+  check.names = FALSE
+)
+knitr::kable(resumen_medias, row.names = FALSE, align = c("l", "r", "r", "r", "r", "c"))
+```
+
+Los límites anteriores corresponden a un nivel de confianza del 95 % y conservan el ajuste de la salida original de emmeans; no se interpretan como intervalos de Tukey para diferencias de medias. La ausencia de diferencias significativas entre dos tratamientos no permite concluir que sus efectos sean equivalentes.
+
+## Resumen de las pruebas
+
+```{r}
+#| label: tbl-pruebas
+#| tbl-cap: "Valores p de las pruebas de homogeneidad de varianzas, normalidad de los residuos y efecto del tratamiento."
+resumen_pruebas <- data.frame(
+  Prueba = c("Levene", "Shapiro–Wilk de los residuos", "ANOVA del tratamiento"),
+  `Valor p` = vapply(c(p_levene, p_shapiro, p_anova), valor_p, character(1)),
+  check.names = FALSE
+)
+knitr::kable(resumen_pruebas, row.names = FALSE, align = c("l", "r"))
+```
+
+<!--
+Referencias: para un manuscrito, agregar las referencias bibliograficas
+completas del metodo de laboratorio y las citas de R y de los paquetes.
+Pueden obtenerse en la sesion original mediante:
+  citation(); citation('car'); citation('emmeans')
+  citation('multcomp'); citation('multcompView'); sessionInfo()
+No se atribuyen versiones ni anios al analisis original porque no fueron
+almacenados en este RDS.
+-->

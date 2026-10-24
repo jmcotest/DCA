@@ -1,0 +1,79 @@
+INFORME QUARTO A PARTIR DEL RDS DEL ANALISIS CLASICO
+
+1. Copie informe_clasico.qmd en la carpeta qmd de su proyecto:
+   proyecto/
+     BD/dca.xlsx
+     code/funciones.R
+     qmd/informe_clasico.qmd
+     salidas/modelo_clasico.rds
+     salidas/graficos/lineas_clasico_homogeneo.jpg
+
+2. Ejecute primero su programa 2a_dca_Clean_Clasico_Tukey.r.
+   El Quarto no ejecuta ese programa ni borra la carpeta salidas.
+   Lee el RDS generado y utiliza el grafico ya existente en salidas.
+   Tambien puede colocar el QMD en la raiz del proyecto.
+
+3. Necesita Quarto CLI, R y los paquetes knitr y rmarkdown:
+   install.packages(c('knitr','rmarkdown'))
+   El paquete R 'quarto' es opcional: no reemplaza la instalacion de Quarto CLI.
+   Los paquetes car, emmeans, multcomp y multcompView son los que usa su
+   programa de analisis; el informe no vuelve a ajustarlo.
+
+4. Desde una terminal situada en la raiz de su proyecto:
+   quarto render qmd/informe_clasico.qmd --to html --output-dir ../salidas/html
+   quarto render qmd/informe_clasico.qmd --to docx --output-dir ../salidas/word
+   quarto render qmd/informe_clasico.qmd --to pdf --output-dir ../salidas/pdf
+   Las rutas de --output-dir son relativas al archivo QMD. Si coloca el QMD
+   en la raiz, use salidas/html, salidas/word y salidas/pdf (sin ../).
+   El formato PDF necesita una distribucion TeX con XeLaTeX.
+   En Positron/RStudio tambien puede abrir el QMD y pulsar Render.
+
+5. PARAMETROS EN EL ENCABEZADO YAML
+   raiz_proyecto: null
+     Deteccion automatica de la raiz o su carpeta superior. Si falla, indique
+     una ruta absoluta entre comillas, usando / incluso en Windows.
+   archivo_rds: 'salidas/modelo_clasico.rds'
+     Ruta relativa a la raiz del proyecto, o una ruta absoluta.
+   archivo_grafico: null
+     Busca un unico archivo con 'clasico_homogeneo' en salidas y subcarpetas.
+     Prefiere JPG/PNG. Si hay varios, debe indicar la ruta exacta, por ejemplo:
+     archivo_grafico: 'salidas/graficos/lineas_clasico_homogeneo.jpg'
+   metodo_nitrogeno: null
+     Sustituya null por la descripcion del metodo real y su referencia.
+     El Word menciona Smith() sin datos suficientes; no se invento la cita.
+   alpha: 0.05
+   nivel_ic: 0.95
+     Coinciden con las letras y los IC guardados por el programa adjunto.
+     Para cambiarlos hay que adaptar tambien el programa de analisis.
+
+CONTENIDO DINAMICO
+- Numero de tratamientos, repeticiones y unidades usadas por el modelo.
+- Valores p de Levene, Shapiro-Wilk y ANOVA, leidos del RDS.
+- F y grados de libertad de ANOVA.
+- Redaccion condicional de los diagnosticos, sin afirmar que un valor p
+  no significativo demuestra homogeneidad o normalidad.
+- Tratamientos de mayor media, diferencias de Tukey y tabla de medias/letras.
+- Grafico existente, con leyenda y referencia automatica a la figura.
+- Advertencia cuando los diagnosticos cuestionan el modelo clasico.
+
+COMPATIBILIDAD CON SU saveRDS
+Su lista repite el nombre 'modelo' para lm y analisis_post_modelo.
+Esto es valido en R, pero resultado$modelo solo devuelve el primero.
+El Quarto identifica el lm por su clase y la tabla por sus columnas,
+por lo que puede leer su RDS actual sin modificarlo.
+Admite tambien nombres distintos para esos dos objetos. Deben conservarse
+los nombres anova, shapiro y levene para las pruebas.
+El objeto tukey no esta guardado en su RDS: se reconstruye desde el modelo
+lm ya ajustado para redactar comparaciones por pares, sin volver a ajustarlo.
+Los limites lower.CL y upper.CL se copian de la tabla guardada: no se
+atribuyen a Tukey si el RDS no conserva la informacion de su ajuste.
+
+ALCANCE Y VALIDACION
+La seccion experimental sigue el Word: matera con planta de trebol,
+inoculacion a los 30 dias y nitrogeno del follaje en mg segun el programa R.
+No se inventan la referencia del metodo ni versiones de paquetes originales.
+Se probaron la lectura de nombres duplicados y la generacion del informe
+con un RDS de prueba de la misma estructura. Usted adjunto el programa R,
+no su RDS ni su grafico: las salidas reales se incorporaran al renderizar
+el QMD dentro de su proyecto. El paquete entregado no incluye datos ni
+graficos de prueba presentados como resultados de su experimento.

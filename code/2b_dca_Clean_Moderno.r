@@ -146,9 +146,9 @@ graficos_personalizado(
     with(g, {
       text(x=bp, y=lower.HPD, labels=pworst, col = "#000000", cex=0.6,offset=0.2,pos=1)
       text(x=bp, y=upper.HPD, labels=pbest, col = "#000000", cex=0.6,offset=0.2,pos=3)
-      abline(h=25,lty=2,lwd=2,col = "#8B0000")
-      text(x=bp, y=25, labels=pref, col = "#8B0000", cex=0.6,adj=0,offset=0.2,pos=3)
-      text(x=bp, y=`E Bayes`, labels=pcheck, col = "#E65100", cex=0.6,adj=0,offset=0.4,pos=2)
+      #abline(h=25,lty=2,lwd=2,col = "#8B0000")
+      #text(x=bp, y=25, labels=pref, col = "#8B0000", cex=0.6,adj=0,offset=0.2,pos=3)
+      #text(x=bp, y=`E Bayes`, labels=pcheck, col = "#E65100", cex=0.6,adj=0,offset=0.4,pos=2)
     })
   }
 )
