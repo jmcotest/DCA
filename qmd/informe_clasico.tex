@@ -1,0 +1,366 @@
+% Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  spanish,
+  letterpaper,
+  DIV=11,
+  numbers=noendperiod]{scrartcl}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+% Make \paragraph and \subparagraph free-standing
+\makeatletter
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+\makeatother
+
+
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+
+
+
+\ifLuaTeX
+\usepackage[bidi=basic,shorthands=off]{babel}
+\else
+\usepackage[bidi=default,shorthands=off]{babel}
+\fi
+\ifLuaTeX
+  \usepackage{selnolig} % disable illegal ligatures
+\fi
+
+
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+ 
+
+
+\KOMAoption{captions}{tableheading}
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Tabla de contenidos}
+\else
+  \newcommand\contentsname{Tabla de contenidos}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{Listado de Figuras}
+\else
+  \newcommand\listfigurename{Listado de Figuras}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{Listado de Tablas}
+\else
+  \newcommand\listtablename{Listado de Tablas}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figura}
+\else
+  \newcommand\figurename{Figura}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Tabla}
+\else
+  \newcommand\tablename{Tabla}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listado}
+\newcommand*\listoflistings{\listof{codelisting}{Listado de Listados}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
+\hypersetup{
+  pdftitle={Contenido de nitrógeno en plantas de trébol},
+  pdflang={es},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+
+\title{Contenido de nitrógeno en plantas de trébol}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Análisis de un diseño completamente al azar}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+
+\section{Materiales y métodos}\label{materiales-y-muxe9todos}
+
+\subsection{Diseño experimental}\label{diseuxf1o-experimental}
+
+Se utilizó un diseño completamente al azar con 6 tratamientos y 5
+repeticiones por tratamiento, para un total de 30 unidades
+experimentales. Se evaluaron tratamientos de inoculación con cepas de
+\emph{Rhizobium}, identificados como 3D0K1, 3D0K13, 3D0K4, 3D0K5, 3D0K7
+y Compuesto. La unidad experimental fue una matera con una planta de
+trébol, inoculada a los 30 días después de la siembra. La variable
+respuesta fue el contenido de nitrógeno en el follaje, expresado en
+miligramos.
+
+La descripción del procedimiento de cuantificación y su referencia
+bibliográfica deben completarse con el protocolo efectivamente
+utilizado; la referencia incompleta del documento base no permite
+identificar el método.
+
+\subsection{Análisis estadístico}\label{anuxe1lisis-estaduxedstico}
+
+El análisis se realizó en el ambiente R. Se ajustó un modelo lineal con
+el tratamiento como efecto fijo para evaluar las diferencias en el
+contenido de nitrógeno. Se utilizó la prueba de Levene centrada en la
+mediana (variante de Brown--Forsythe) para examinar la homogeneidad de
+varianzas y la prueba de Shapiro--Wilk para examinar la normalidad de
+los residuos. La independencia de los errores se sustenta en la
+aleatorización y en la identificación de unidades experimentales
+distintas; no se demuestra mediante estas pruebas.
+
+El efecto de los tratamientos se evaluó mediante el análisis de
+varianza. Las medias estimadas por el modelo se obtuvieron con el
+paquete \textbf{emmeans} y la comparación múltiple se realizó mediante
+la prueba de Tukey, con un nivel de significancia del 5 \%. Se utilizó
+\textbf{multcomp}, con apoyo de \textbf{multcompView}, para representar
+las comparaciones mediante letras, y \textbf{car} para la prueba de
+Levene. Se calcularon intervalos de confianza del 95 \% para las medias
+estimadas por el modelo. Las letras corresponden a comparaciones de
+Tukey y no deben confundirse con el ajuste de los intervalos para cada
+media.
+
+\section{Resultados y discusión}\label{resultados-y-discusiuxf3n}
+
+Según la prueba de Levene, no se rechazó la hipótesis nula de
+homogeneidad de varianzas (p = 0,4794). Este resultado no demuestra que
+las varianzas sean iguales. La prueba de Shapiro--Wilk aplicada a los
+residuos señaló evidencia contra la normalidad (p = 0,0149).
+
+El análisis de varianza detectó diferencias estadísticamente
+significativas entre las medias de los tratamientos (F = 14,3705; gl = 5
+y 24; p = 1,485e-06). Esto indica que al menos una media difiere de las
+demás.
+
+Los dos mayores valores estimados de contenido de nitrógeno
+correspondieron a 3D0K1 y 3D0K5 (28,82 y 23,98 mg, respectivamente;
+Figura~\ref{fig-nitrogeno}). Este orden describe las estimaciones
+puntuales y no implica por sí solo que ambos superen a todos los demás
+tratamientos.
+
+Al comparar 3D0K1 con los otros tratamientos, la prueba de Tukey detectó
+un contenido de nitrógeno mayor que en 3D0K7, Compuesto, 3D0K4 y 3D0K13.
+No se detectaron diferencias significativas frente a 3D0K5; ello no
+demuestra equivalencia entre tratamientos. Las comparaciones se
+interpretan bajo el modelo de varianza común.
+
+Dado que al menos un diagnóstico señaló una desviación de los supuestos,
+la ANOVA y las comparaciones de Tukey se presentan como resultados del
+modelo clásico ajustado y deben interpretarse con cautela. Es necesario
+revisar los gráficos de residuos y considerar un análisis de
+sensibilidad adecuado antes de formular conclusiones definitivas. El
+contraste de Levene no significativo, si corresponde, no compensa una
+desviación de normalidad.
+
+\begin{figure}
+
+\centering{
+
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio]{../salidas/graficos/lineas_clasico_homogeneo.jpg}
+
+}
+
+\caption{\label{fig-nitrogeno}Contenido de nitrógeno en el follaje de
+plantas de trébol según el tratamiento. Los valores estimados por el
+modelo se resaltan en negro, la mediana en naranja y las observaciones
+originales en azul, según el gráfico producido por el programa adjunto.
+Las barras de error representan los límites de confianza del 95 \%
+guardados por emmeans. Tratamientos que no comparten letras presentan
+diferencias significativas según Tukey al 5 \%. Compartir una letra
+indica que no se detectó una diferencia; no demuestra equivalencia.}
+
+\end{figure}%
+
+\subsection{Medias estimadas y comparación de
+tratamientos}\label{medias-estimadas-y-comparaciuxf3n-de-tratamientos}
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1304}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2174}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1630}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1739}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1739}}
+  >{\centering\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1413}}@{}}
+
+\caption{\label{tbl-medias}Medias estimadas del contenido de nitrógeno,
+error estándar y límites de confianza del 95 \%. Las letras corresponden
+a la comparación múltiple de Tukey.}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Tratamiento
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Media estimada (mg)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Error estándar
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Límite inferior
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Límite superior
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Grupo Tukey
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+3D0K1 & 28,82 & 1,54 & 24,42 & 33,22 & a \\
+3D0K5 & 23,98 & 1,54 & 19,58 & 28,38 & ab \\
+3D0K7 & 19,92 & 1,54 & 15,52 & 24,32 & bc \\
+Compuesto & 18,70 & 1,54 & 14,30 & 23,10 & bc \\
+3D0K4 & 14,64 & 1,54 & 10,24 & 19,04 & c \\
+3D0K13 & 13,26 & 1,54 & 8,86 & 17,66 & c \\
+
+\end{longtable}
+
+}
+
+Los límites anteriores corresponden a un nivel de confianza del 95 \% y
+conservan el ajuste de la salida original de emmeans; no se interpretan
+como intervalos de Tukey para diferencias de medias. La ausencia de
+diferencias significativas entre dos tratamientos no permite concluir
+que sus efectos sean equivalentes.
+
+\subsection{Resumen de las pruebas}\label{resumen-de-las-pruebas}
+
+{
+
+\begin{longtable}[]{@{}lr@{}}
+
+\caption{\label{tbl-pruebas}Valores p de las pruebas de homogeneidad de
+varianzas, normalidad de los residuos y efecto del tratamiento.}
+
+\tabularnewline
+
+\toprule\noalign{}
+Prueba & Valor p \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Levene & p = 0,4794 \\
+Shapiro--Wilk de los residuos & p = 0,0149 \\
+ANOVA del tratamiento & p = 1,485e-06 \\
+
+\end{longtable}
+
+}
+
+
+
+
+\end{document}
