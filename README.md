@@ -4,7 +4,7 @@ Material docente para el análisis de experimentos bajo un **diseño completamen
 
 El ejemplo estudia el contenido de nitrógeno en plantas de trébol sometidas a seis tratamientos de inoculación con *Rhizobium*, con cinco repeticiones por tratamiento. La variable respuesta es `nitrogeno`, expresada en miligramos, y el factor de clasificación es `tratamiento`.
 
-**Fuente del ejemplo:** tomado de Steel, R. G. D., & Torrie, J. H. (1988). *Bioestadística: principios y procedimientos* (2.ª ed.). McGraw-Hill, pp. 134–135.
+**Fuente del ejemplo:** Steel, R. G. D., & Torrie, J. H. (1988). *Bioestadística: principios y procedimientos* (2.ª ed.). McGraw-Hill, pp. 134–135.
 
 ## Contenido
 
@@ -29,7 +29,7 @@ El ejemplo estudia el contenido de nitrógeno en plantas de trébol sometidas a 
 | `code/1_dca_mejorado.r` | Desarrollo ampliado con gráficos personalizados y ejemplos clásicos y bayesianos. |
 | `code/2a_dca_Clean_Clasico_Tukey.r` | Análisis clásico organizado: Levene, modelo lineal, ANOVA, Shapiro–Wilk, medias estimadas y Tukey. |
 | `code/2b_dca_Clean_Moderno.r` | Análisis bayesiano con varianzas residuales diferentes por tratamiento. |
-| `code/funciones.R` | Función `graficos_personalizado()` compartida por los scripts independientes. |
+| `code/funciones.R` | Función `graficos_personalizado()` y `resumen()` compartida por los scripts independientes. |
 | `code/ResumenManejoDeListas.R` | Ejemplos docentes de listas, `lapply()`, `mapply()` y `Map()`. |
 | `qmd/` | Carpeta prevista para documentos Quarto (`.qmd`). |
 | `rmd/` | Carpeta prevista para documentos R Markdown (`.Rmd`). |
