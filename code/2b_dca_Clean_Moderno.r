@@ -95,7 +95,7 @@ MCMC_trt <- lapply(indices, function(i) colMeans(tmp[i, , drop = FALSE]))
 #Resumen de distribucion *a posteriori*
 resumenMCMC<-lapply(MCMC_trt,function(x) c(mean(x),HPDinterval(as.mcmc(x),prob=0.90)))
 resumenMCMC<-do.call(rbind,resumenMCMC)
-colnames(resumenMCMC)<-c("Est.Bayes", "lower.HPD", "upper.HPD")
+colnames(resumenMCMC)<-c("Est Bayes", "lower.HPD", "upper.HPD")
 
 # Analisis de la distribución *a posteriori* para cada tratamiento: 
 # Probabilidad de ser el mejor y el peor tratamiento
@@ -132,21 +132,23 @@ complementos<-data.frame(tratamiento=rownames(resumenMCMC), resumenMCMC, pbest=p
 analisis_post_modelo <- merge(descriptiva,complementos, by.x = "tratamiento",
  by.y = "tratamiento", all.x = TRUE)
 
+analisis_post_modelo[["E Bayes"]] <- analisis_post_modelo[["Est.Bayes"]] 
+
 graficos_personalizado(
-  data_g = analisis_post_modelo,formula_g=tratamiento~Est.Bayes+Mediana+lower.HPD+upper.HPD,
+  data_g = analisis_post_modelo,formula_g=tratamiento~`E Bayes`+Mediana+lower.HPD+upper.HPD,
   datos=datos,formula_m=nitrogeno~tratamiento,
   typeplot="lineas-violines",
-  ordenar="Est.Bayes",
+  ordenar="E Bayes",
   prefixjpg="moderno_heterogeneo", 
   xlab=expression("Cepas de " * italic("Rhizobium") * " sp."), 
   ylab="Nitrógeno (mg)",
   add = function(g) {
     with(g, {
-      text(x=bp, y=lower.HPD, labels=pbest, col = "#000000", cex=0.6,offset=0.2,pos=1)
-      text(x=bp, y=upper.HPD, labels=pworst, col = "#000000", cex=0.6,offset=0.2,pos=3)
+      text(x=bp, y=lower.HPD, labels=pworst, col = "#000000", cex=0.6,offset=0.2,pos=1)
+      text(x=bp, y=upper.HPD, labels=pbest, col = "#000000", cex=0.6,offset=0.2,pos=3)
       abline(h=25,lty=2,lwd=2,col = "#8B0000")
       text(x=bp, y=25, labels=pref, col = "#8B0000", cex=0.6,adj=0,offset=0.2,pos=3)
-      text(x=bp, y=Est.Bayes, labels=pcheck, col = "#E65100", cex=0.6,adj=0,offset=0.4,pos=2)
+      text(x=bp, y=`E Bayes`, labels=pcheck, col = "#E65100", cex=0.6,adj=0,offset=0.4,pos=2)
     })
   }
 )

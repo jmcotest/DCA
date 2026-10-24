@@ -88,7 +88,8 @@ modelo<-formula(nitrogeno~tratamiento)
 #   SOLO SE PUEDEN RECHAZAR.
 ####################################################
 
-car::leveneTest(modelo,data=datos)
+lt<-car::leveneTest(modelo,data=datos)
+lt
 
 ######################################################
 # 2.1.2. ANOVA varianza homogenea     #
@@ -98,6 +99,9 @@ car::leveneTest(modelo,data=datos)
   anova_m<-anova(m)
   anova_m
 
+# Prueba de Shapiro-Wilk
+sh<-shapiro.test(residuals(m))
+sh
 ######################################################
 # 2.1.3. Cálculo de los predichos obtenidos por mínimos cuadrados - LSMEAN     #
 # Deben usarse en el caso de desbalance por repeticiones
@@ -129,12 +133,12 @@ tabla_letras
 analisis_post_modelo <- merge(descriptiva,tabla_letras, by.x = "tratamiento",
  by.y = "tratamiento", all.x = TRUE)
 
-#analisis_post_model[["LS Mean"]] <- analisis_post_modelo[["emmean"]] 
+analisis_post_modelo[["LS Mean"]] <- analisis_post_modelo[["emmean"]] 
 
 graficos_personalizado(
-  data_g = analisis_post_modelo,formula_g=tratamiento~emmean+Mediana+lower.CL+upper.CL,
+  data_g = analisis_post_modelo,formula_g=tratamiento~`LS Mean`+Mediana+lower.CL+upper.CL,
   datos=datos,formula_m=nitrogeno~tratamiento,
-  ordenar="emmean", typeplot="lineas",
+  ordenar="LS Mean", typeplot="lineas",
   prefixjpg="clasico_homogeneo",
   xlab=expression("Cepas de " * italic("Rhizobium") * " sp."), 
   ylab="Nitrógeno (mg)", 
@@ -151,5 +155,5 @@ graficos_personalizado(
 write_xlsx(list(anova=anova_m, modelo=analisis_post_modelo), 
 path = file.path(".","salidas","excel","modelo_clasico.xlsx"))
 
-saveRDS(list(modelo=m,anova=anova_m, modelo=analisis_post_modelo), 
+saveRDS(list(modelo=m,anova=anova_m,shapiro=sh,levene=lt, modelo=analisis_post_modelo), 
         file = file.path(".","salidas","modelo_clasico.rds"),compress = "xz")
