@@ -1,3 +1,15 @@
+#personalizando agregate
+resumen<-function(x){
+  Media<-mean(x)
+  sd <- sd(x)
+  n <- length(x)
+  # t(alpha/2,gl)*s/raiz(n)
+  delta<-qt(0.025,n-1L,lower.tail=FALSE)*sd/sqrt(n)
+  return(c(Media=Media,Ds=sd,N=n,Inferior=Media-delta,Superior=Media+delta,
+  Maximo=max(x),Minimo=min(x),Mediana=median(x)))
+}
+
+
 # Personalización de gráficos
 graficos_personalizado<-function(data_g,formula_g,datos, formula_m,prefixjpg =NULL,typeplot="barras",ordenar=NULL,
   colores=list(color_barras  = "#7BC96F",

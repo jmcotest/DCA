@@ -31,24 +31,11 @@ nlevels(datos$tratamiento)
 #####################################
 # 1. ANÁLISIS GRÁFICO DE LOS DATOS  #
 #####################################
-
+source(file.path(".","code","funciones.R"))
 #Estadistica descriptiva
-#personalizando agregate
-resumen<-function(x){
-  Media<-mean(x)
-  sd <- sd(x)
-  n <- length(x)
-  # t(alpha/2,gl)*s/raiz(n)
-  delta<-qt(0.025,n-1,lower.tail=FALSE)*sd/sqrt(n)
-  return(c(Media=Media,Ds=sd,N=n,Inferior=Media-delta,Superior=Media+delta,
-  Maximo=max(x),Minimo=min(x),Mediana=median(x)))
-}
 descriptiva<-aggregate(nitrogeno~tratamiento,data=datos,resumen)
 # Operaciona previas a la gráfica descriptiva
 descriptiva<-data.frame(tratamiento=descriptiva$tratamiento,descriptiva$nitrogeno)
-
-source(file.path(".","code","funciones.R"))
-
 
 # Uso de la funcion graficos
 graficos_personalizado(
@@ -82,7 +69,7 @@ modelo<-formula(nitrogeno~tratamiento)
 
 library(MCMCglmm)
 # Modelo con varianzas heterogeneas
-m<-MCMCglmm(modelo, data = datos, rcov=~idh(tratamiento):units, nitt=1e6,verbose=FALSE)
+m<-MCMCglmm(modelo, data = datos, rcov=~idh(tratamiento):units, nitt=1e6L,verbose=FALSE)
 
 ## Cálculo de los predichos obtenidos Bayes - Bayesian Linear Prediction
 # Predicciones de todas las iteraciones MCMC
@@ -108,20 +95,20 @@ colnames(resumenMCMC)<-c("Est Bayes", "lower.HPD", "upper.HPD")
 # https://doi.org/10.1111/1467-9868.00201"
 
 MatrixMCMC<-as.matrix(do.call(cbind,MCMC_trt))
-rank_MatrixMCMC<-apply(MatrixMCMC,1,rank)
+rank_MatrixMCMC<-apply(MatrixMCMC,1L,rank)
 pbest<-rowSums(rank_MatrixMCMC==nlevels(grupo))/ncol(rank_MatrixMCMC)
 pworst<-rowSums(rank_MatrixMCMC==1)/ncol(rank_MatrixMCMC)
 
-pbest_c<-format(round(pbest,4), nsmall=4) 
-pworst_c<-format(round(pworst,4), nsmall=4)
+pbest_c<-format(round(pbest,4L), nsmall=4L) 
+pworst_c<-format(round(pworst,4L), nsmall=4L)
 
 #Nuevo probabilidad de superar un valor de referencia
-p_ref<-sapply(MCMC_trt,function(x) sum(x > 25) / length(x))
-p_ref_c<-sapply(p_ref,function(x) format(round(x,4), nsmall=4))
+p_ref<-sapply(MCMC_trt,function(x) sum(x > 25L) / length(x))
+p_ref_c<-sapply(p_ref,function(x) format(round(x,4L), nsmall=4L))
 
 #Nuevo probabilidad de superar el testigo Compuesto
 p_check<-sapply(MCMC_trt,function(x) sum(x > MCMC_trt[["Compuesto"]]) / length(x))
-p_check_c<-sapply(p_check,function(x) format(round(x,4), nsmall=4))
+p_check_c<-sapply(p_check,function(x) format(round(x,4L), nsmall=4L))
 p_check_c["Compuesto"]<-""
 #Juntando complementos
 complementos<-data.frame(tratamiento=rownames(resumenMCMC), resumenMCMC, pbest=pbest_c, pworst=pworst_c, pref=p_ref_c, pcheck=p_check_c)
@@ -144,8 +131,8 @@ graficos_personalizado(
   ylab="Nitrógeno (mg)",
   add = function(g) {
     with(g, {
-      text(x=bp, y=lower.HPD, labels=pworst, col = "#000000", cex=0.6,offset=0.2,pos=1)
-      text(x=bp, y=upper.HPD, labels=pbest, col = "#000000", cex=0.6,offset=0.2,pos=3)
+      text(x=bp, y=lower.HPD, labels=pworst, col = "#000000", cex=0.6,offset=0.2,pos=1L)
+      text(x=bp, y=upper.HPD, labels=pbest, col = "#000000", cex=0.6,offset=0.2,pos=3L)
       #abline(h=25,lty=2,lwd=2,col = "#8B0000")
       #text(x=bp, y=25, labels=pref, col = "#8B0000", cex=0.6,adj=0,offset=0.2,pos=3)
       #text(x=bp, y=`E Bayes`, labels=pcheck, col = "#E65100", cex=0.6,adj=0,offset=0.4,pos=2)

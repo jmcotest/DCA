@@ -31,24 +31,11 @@ nlevels(datos$tratamiento)
 #####################################
 # 1. ANÁLISIS GRÁFICO DE LOS DATOS  #
 #####################################
-
+source(file.path(".","code","funciones.R"))
 #Estadistica descriptiva
-#personalizando agregate
-resumen<-function(x){
-  Media<-mean(x)
-  sd <- sd(x)
-  n <- length(x)
-  # t(alpha/2,gl)*s/raiz(n)
-  delta<-qt(0.025,n-1,lower.tail=FALSE)*sd/sqrt(n)
-  return(c(Media=Media,Ds=sd,N=n,Inferior=Media-delta,Superior=Media+delta,
-  Maximo=max(x),Minimo=min(x),Mediana=median(x)))
-}
 descriptiva<-aggregate(nitrogeno~tratamiento,data=datos,resumen)
 # Operaciona previas a la gráfica descriptiva
 descriptiva<-data.frame(tratamiento=descriptiva$tratamiento,descriptiva$nitrogeno)
-
-source(file.path(".","code","funciones.R"))
-
 
 # Uso de la funcion graficos
 graficos_personalizado(
@@ -144,7 +131,7 @@ graficos_personalizado(
   ylab="Nitrógeno (mg)", 
   add = function(g) {
     with(g,{
-      text(x=bp, y=upper.CL, labels=.group, col = "#1B5E20", cex=0.9, offset=0.5,pos=3)
+      text(x=bp, y=upper.CL, labels=.group, col = "#1B5E20", cex=0.9, offset=0.5,pos=3L)
     })
   }
 )
