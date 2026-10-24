@@ -125,7 +125,7 @@ analisis_post_modelo[["LS Mean"]] <- analisis_post_modelo[["emmean"]]
 graficos_personalizado(
   data_g = analisis_post_modelo,formula_g=tratamiento~`LS Mean`+Mediana+lower.CL+upper.CL,
   datos=datos,formula_m=nitrogeno~tratamiento,
-  ordenar="LS Mean", typeplot="lineas",
+  ordenar="LS Mean", typeplot="lineas-violines",
   prefixjpg="clasico_homogeneo",
   xlab=expression("Cepas de " * italic("Rhizobium") * " sp."), 
   ylab="Nitrógeno (mg)", 
