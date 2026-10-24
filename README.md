@@ -238,4 +238,8 @@ Al adaptar la exportación, puede asignar nombres distintos, por ejemplo `ajuste
 **José Miguel Cotes Torres**  
 Material de apoyo para la enseñanza de estadística y diseño experimental en ciencias agrarias.
 
+## Nota sobre el uso de inteligencia artificial
+
+La inteligencia artificial se utiliza como herramienta de apoyo para elaborar la documentación del repositorio, desarrollar documentos en Quarto y consultar fragmentos de código. Sus propuestas son revisadas, mejoradas y personalizadas por el autor, quien conserva la responsabilidad sobre el contenido, las decisiones metodológicas y la interpretación de los resultados.
+
 Repositorio: [jmcotest/DCA](https://github.com/jmcotest/DCA).
